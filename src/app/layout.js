@@ -11,7 +11,7 @@ const poppins = Poppins({
 
 export const metadata = {
   title: SITE_TITLE,
-  description: "Impara giocando sfruttando (o magari no) i tuoi appunti accompagnato dalla mascote del righi Genny Robot!",
+  description: "Impara giocando sfruttando i tuoi appunti ( e non solo ) accompagnato dalla mascotte del Righi!",
 }
 
 export default function RootLayout({ children }) {

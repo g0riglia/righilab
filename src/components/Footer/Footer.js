@@ -12,7 +12,7 @@ function Footer() {
         <nav aria-label="Link footer" className={styles.links}>
           <Link href="/">Home</Link>
           <Link href="/upload">Inizia</Link>
-          <Link href="/">Come funziona</Link>
+          <Link href="/#come-funziona">Come funziona</Link>
         </nav>
         <p className={styles.copy}>© {year} {SITE_TITLE}. Tutti i diritti riservati.</p>
       </div>
