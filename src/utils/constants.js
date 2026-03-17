@@ -21,8 +21,8 @@ export const STUDENTS = [
         role: "Web Developer & Design",
     },
     {
-        name: "Christian Magarini",
-        role: "Design",
+        name: "Christian Salvatore Magarini",
+        role: "Design & Motivazione",
     },
     {
         name: "Carmine Ciccarelli",
@@ -34,7 +34,7 @@ export const STUDENTS = [
     },
     {
         name: "Marco Ivasyuk",
-        role: "Placeholder",
+        role: "Ukraino",
     },
     {
         name: "Emanuele",

@@ -15,13 +15,13 @@ export default function Home() {
           <p>Carica quello che vuoi studiare e lascia che il robot lo trasformi in sfide interattive.</p>
           <div className={styles.heroCtas}>
             <Link className={styles.fullCta} href="/upload">Inizia ad imparare</Link>
-            <Link className={styles.emptyCta} href="/">Scopri come funziona</Link>
+            <Link className={styles.emptyCta} href="#come-funziona">Scopri come funziona</Link>
           </div>
         </div>
         <Image
           className={styles.robot}
           src="/robot-hi.png"
-          alt="Il robot mascote del sito che saluta"
+          alt="Il robot mascotte del sito che saluta"
           width={400}
           height={400}
         />
