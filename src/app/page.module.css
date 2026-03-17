@@ -115,6 +115,10 @@
   margin-top: 1em;
 }
 
+.heroCta {
+  min-width: 220px;
+}
+
 .robot {
   width: min(30vw, 400px);
   height: auto;
@@ -149,98 +153,6 @@
 
 .howItWorks {
   padding-top: 0;
-}
-
-.fullCta,
-.emptyCta {
-  --cta-border: #a0f5f7;
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 220px;
-  padding: 0.72rem 1.3rem;
-  border-radius: 12px;
-  border: 1px solid var(--cta-border);
-  color: white;
-  text-decoration: none;
-  font-weight: 700;
-  letter-spacing: 0.015em;
-  text-shadow: 0 1px 4px rgb(2 20 34 / 55%);
-  transition:
-    transform 180ms ease,
-    box-shadow 180ms ease,
-    background-color 180ms ease,
-    border-color 180ms ease;
-  overflow: hidden;
-}
-
-.fullCta {
-  background: rgb(160 245 247 / 24%);
-  box-shadow:
-    0 8px 20px rgb(6 35 50 / 28%),
-    0 0 0 1px rgb(160 245 247 / 24%) inset;
-  backdrop-filter: blur(5px) saturate(150%);
-  -webkit-backdrop-filter: blur(5px) saturate(150%);
-}
-
-.emptyCta {
-  background: transparent;
-  box-shadow: 0 4px 12px rgb(5 27 43 / 22%);
-}
-
-.fullCta::after,
-.emptyCta::after {
-  content: "";
-  position: absolute;
-  inset: -40% auto -40% -22%;
-  width: 22%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgb(255 255 255 / 55%),
-    transparent
-  );
-  transform: rotate(14deg);
-  opacity: 0;
-  pointer-events: none;
-}
-
-.fullCta:hover,
-.emptyCta:hover {
-  transform: translateY(-2px);
-  border-color: rgb(205 255 255);
-  box-shadow: 0 10px 22px rgb(5 35 47 / 28%);
-}
-
-.fullCta:hover {
-  background: rgb(160 245 247 / 26%);
-}
-
-.emptyCta:hover {
-  background: rgb(160 245 247 / 10%);
-}
-
-.fullCta:hover::after,
-.emptyCta:hover::after {
-  opacity: 1;
-  animation: ctaSweep 700ms ease;
-}
-
-.fullCta:focus-visible,
-.emptyCta:focus-visible {
-  outline: 2px solid rgb(212 255 255 / 70%);
-  outline-offset: 2px;
-}
-
-@keyframes ctaSweep {
-  from {
-    left: -24%;
-  }
-
-  to {
-    left: 120%;
-  }
 }
 
 /* Seconda sezione */
@@ -438,8 +350,7 @@
     gap: 0.8rem;
   }
 
-  .fullCta,
-  .emptyCta {
+  .heroCta {
     width: 100%;
     min-width: 0;
   }

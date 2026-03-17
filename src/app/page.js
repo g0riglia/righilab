@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Fragment } from "react";
 import { motion } from "motion/react";
 import { STUDENTS } from "@/utils/constants";
+import Button from "@/components/Button";
 
 export default function Home() {
   return (
@@ -14,8 +15,12 @@ export default function Home() {
           <h1>Impara giocando con il <em>tuo</em> robot</h1>
           <p>Carica quello che vuoi studiare e lascia che il robot lo trasformi in sfide interattive.</p>
           <div className={styles.heroCtas}>
-            <Link className={styles.fullCta} href="/upload">Inizia ad imparare</Link>
-            <Link className={styles.emptyCta} href="#come-funziona">Scopri come funziona</Link>
+            <Button href="/upload" variant="solid" className={styles.heroCta}>
+              Inizia ad imparare
+            </Button>
+            <Button href="#come-funziona" variant="outline" className={styles.heroCta}>
+              Scopri come funziona
+            </Button>
           </div>
         </div>
         <Image
