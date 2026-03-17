@@ -45,3 +45,26 @@ export const STUDENTS = [
         role: "Documentation",
     },
 ]
+
+export const GENERATION_TOOLTIPS = [
+    "Analizzo il contenuto per trovare i concetti principali...",
+    "Sto trasformando il materiale in mini-sfide interattive...",
+    "Sto semplificando i passaggi piu complessi...",
+    "Creo domande su misura in base al contenuto caricato...",
+    "Sto controllando che il livello sia adatto allo studio...",
+    "Organizzo i concetti in una sequenza chiara...",
+    "Estraggo parole chiave e definizioni utili...",
+    "Sto preparando una modalita quiz per ripassare meglio...",
+    "Aggiungo piccoli feedback per aiutarti a migliorare...",
+    "Ottimizzo la difficolta dei prossimi esercizi...",
+    "Sto creando una lezione breve e coinvolgente...",
+    "Collego i concetti tra loro per favorire la memoria...",
+    "Genero esempi pratici dal materiale che hai scelto...",
+    "Controllo coerenza e completezza del contenuto...",
+    "Sto preparando il riepilogo finale...",
+    "Creo una progressione dal facile al difficile...",
+    "Definisco obiettivi di apprendimento chiari...",
+    "Rendo i contenuti piu interattivi e meno passivi...",
+    "Costruisco il percorso di gioco personalizzato...",
+    "Quasi pronto: sto rifinendo gli ultimi dettagli...",
+];
