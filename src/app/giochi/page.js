@@ -15,23 +15,7 @@ export default function GiochiPage() {
         </div>
 
         <div className={styles.cardsGrid}>
-          {GAME_TYPES.filter((g) => g.providerKey === "battery").map((game) => (
-            <article key={game.slug} className={styles.card}>
-              <Image
-                src={game.image}
-                alt={game.alt}
-                width={170}
-                height={170}
-                className={styles.cardImage}
-              />
-              <h2>{game.name}</h2>
-              <p>{game.description}</p>
-              <Button href={`/giochi/${game.slug}`} variant="solid" className={styles.playButton}>
-                Gioca
-              </Button>
-            </article>
-          ))}
-          {GAME_TYPES.filter((g) => g.providerKey === "adventure").map((game) => (
+          {GAME_TYPES.map((game) => (
             <article key={game.slug} className={styles.card}>
               <Image
                 src={game.image}

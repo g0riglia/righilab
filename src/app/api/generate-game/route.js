@@ -21,6 +21,7 @@ export async function POST(request) {
     const lessonSummary = {
       title: lesson.title,
       sections: lesson.sections || [],
+      bodyMdx: typeof lesson.bodyMdx === "string" ? lesson.bodyMdx : "",
     };
 
     const gameData = await generateGameByKey(gameKey, lessonSummary, difficulty);

@@ -3,7 +3,7 @@ import styles from "./page.module.css";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "motion/react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, startTransition } from "react";
 import Button from "@/components/Button";
 import { useLesson } from "@/components/LessonProvider";
 import { GENERATION_TOOLTIPS } from "@/utils/constants";
@@ -92,7 +92,9 @@ export default function Upload() {
     }
 
     const redirectTimeoutId = window.setTimeout(() => {
-      router.push("/lezione");
+      startTransition(() => {
+        router.push("/lezione");
+      });
     }, 1500);
 
     return () => {
@@ -268,8 +270,10 @@ export default function Upload() {
         throw new Error(data.error || `Errore ${res.status}. Riprova.`);
       }
       const lessonData = await res.json();
-      setLesson(lessonData);
-      setGenerationComplete(true);
+      startTransition(() => {
+        setLesson(lessonData);
+        setGenerationComplete(true);
+      });
     } catch (err) {
       const msg = err?.message || "Errore nella generazione. Riprova.";
       setGenerationError(msg);

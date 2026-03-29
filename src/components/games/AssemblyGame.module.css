@@ -1,0 +1,440 @@
+/* ═══════════════════════════════════════════════
+   AssemblaIlRobot.module.css
+   ═══════════════════════════════════════════════ */
+
+.main {
+  min-height: 100vh;
+  background-image:
+    radial-gradient(
+      1100px 600px at 14% 8%,
+      rgb(158 245 243 / 38%),
+      transparent 55%
+    ),
+    radial-gradient(
+      950px 560px at 82% 26%,
+      rgb(114 224 238 / 24%),
+      transparent 58%
+    );
+  background-color: #1b6f81;
+  padding: 2rem 1rem 4rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.2rem;
+  color: white;
+  font-family: inherit;
+  border-radius: 20px;
+}
+
+/* ── Navigation ── */
+.backBtn {
+  align-self: flex-start;
+  background: none;
+  border: 1px solid rgb(191 249 255 / 50%);
+  color: rgb(220 255 255);
+  border-radius: 999px;
+  padding: 0.4rem 1.1rem;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.backBtn:hover {
+  background: rgb(255 255 255 / 10%);
+}
+
+/* ── Header ── */
+.title {
+  font-size: clamp(1.6rem, 4vw, 2.2rem);
+  text-shadow: 0 3px 12px rgb(15 77 96 / 40%);
+  text-align: center;
+}
+
+.subtitle {
+  font-size: 1rem;
+  color: rgb(220 255 255 / 85%);
+  text-align: center;
+  margin-top: -0.5rem;
+}
+
+/* ══════════════════════════════════
+   Robot stage
+   ══════════════════════════════════ */
+.robotStage {
+  position: relative;
+  width: 260px;
+  height: 320px;
+}
+
+.piece {
+  position: absolute;
+}
+
+.pieceHidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.snap {
+  animation: snapIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.landed {
+  opacity: 1;
+  transform: translate(0, 0) scale(1);
+}
+
+@keyframes snapIn {
+  0% {
+    opacity: 0;
+    transform: var(--from);
+  }
+  60% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1.08);
+  }
+  80% {
+    transform: translate(0, 0) scale(0.96);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+/* ── Piece positions ── */
+.p_testa {
+  top: 0px;
+  left: 30px;
+  width: 200px;
+  height: 106px;
+}
+.p_torso {
+  top: 98px;
+  left: 68px;
+  width: 120px;
+  height: 120px;
+  z-index: 3;
+}
+/* DX = robot's anatomical right = viewer's LEFT */
+.p_bracciodx {
+  top: 112px;
+  right: 19px;
+  width: 60px;
+  height: 108px;
+}
+/* SX = robot's anatomical left = viewer's RIGHT */
+.p_bracciosx {
+  top: 112px;
+  left: 19px;
+  width: 60px;
+  height: 108px;
+}
+.p_gambasx {
+  top: 202px;
+  left: 68px;
+  width: 66px;
+  height: 102px;
+}
+.p_gambadx {
+  top: 202px;
+  right: 68px;
+  width: 66px;
+  height: 102px;
+}
+.p_schermo {
+  top: 30px;
+  left: 78px;
+  width: 98px;
+  height: 60px;
+  z-index: 5;
+}
+
+/* ══════════════════════════════════
+   Barra pezzi (sopra la card domande)
+   ══════════════════════════════════ */
+.trayWrap {
+  width: min(100%, 520px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.trayTitle {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: rgb(220 255 255 / 95%);
+  letter-spacing: 0.02em;
+}
+
+.trayHint {
+  margin: 0 0 0.5rem;
+  font-size: 0.82rem;
+  color: rgb(190 245 255 / 78%);
+  text-align: center;
+  line-height: 1.35;
+  max-width: 420px;
+}
+
+.trayRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.6rem;
+  width: 100%;
+}
+
+.trayPiece {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.5rem 0.65rem 0.55rem;
+  min-width: 86px;
+  border-radius: 16px;
+  border: 2px solid rgb(191 249 255 / 38%);
+  background: rgb(255 255 255 / 8%);
+  color: rgb(234 255 255 / 95%);
+  cursor: pointer;
+  transition:
+    border-color 0.18s ease,
+    background 0.18s ease,
+    transform 0.15s ease,
+    box-shadow 0.18s ease;
+  font: inherit;
+}
+
+.trayPiece:hover:not(:disabled) {
+  background: rgb(255 255 255 / 14%);
+  border-color: rgb(191 249 255 / 62%);
+  transform: translateY(-2px);
+}
+
+.trayPiece:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.trayPieceSelected {
+  border-color: rgb(144 229 206 / 95%) !important;
+  background: rgb(144 229 206 / 22%) !important;
+  box-shadow:
+    0 0 0 2px rgb(144 229 206 / 35%),
+    0 10px 22px rgb(7 39 54 / 22%);
+  transform: translateY(-2px);
+}
+
+.trayPieceThumb {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(0 40 50 / 18%);
+  border-radius: 12px;
+}
+
+.trayPieceLabel {
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.2;
+  max-width: 88px;
+}
+
+.trayPieceBadge {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgb(180 255 220);
+  margin-top: 0.1rem;
+}
+
+/* ══════════════════════════════════
+   Question card
+   ══════════════════════════════════ */
+.qcard {
+  background:
+    linear-gradient(145deg, rgb(117 218 226 / 22%), rgb(53 160 181 / 14%)),
+    radial-gradient(circle at 85% 10%, rgb(255 255 255 / 20%), transparent 40%);
+  border: 1px solid rgb(196 250 251 / 42%);
+  border-radius: 20px;
+  box-shadow:
+    0 14px 30px rgb(7 39 54 / 18%),
+    0 0 0 1px rgb(221 255 255 / 14%) inset;
+  backdrop-filter: blur(7px);
+  padding: 1.5rem;
+  width: min(100%, 460px);
+}
+
+.qcardFocused {
+  border-color: rgb(144 229 206 / 55%);
+  box-shadow:
+    0 14px 30px rgb(7 39 54 / 18%),
+    0 0 0 2px rgb(144 229 206 / 22%) inset;
+}
+
+.qcardPrompt {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+  line-height: 1.45;
+  color: rgb(220 255 255 / 90%);
+  text-align: center;
+}
+
+.qcardPromptIcon {
+  display: inline-block;
+  margin-right: 0.2rem;
+}
+
+.targetBanner {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  border-radius: 14px;
+  background: rgb(0 35 45 / 28%);
+  border: 1px solid rgb(144 229 206 / 35%);
+}
+
+.targetThumb {
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(255 255 255 / 12%);
+  border-radius: 12px;
+}
+
+.targetText {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.targetEyebrow {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgb(190 245 255 / 75%);
+}
+
+.targetName {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: rgb(230 255 250);
+  line-height: 1.2;
+}
+
+.targetSub {
+  font-size: 0.8rem;
+  color: rgb(190 245 255 / 72%);
+  line-height: 1.3;
+}
+
+.pieceLabel {
+  font-size: 13px;
+  color: rgb(190 245 255 / 80%);
+  margin-bottom: 0.5rem;
+}
+.pieceLabel strong {
+  color: rgb(220 255 255);
+}
+
+.question {
+  font-size: 1.05rem;
+  font-weight: 500;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+
+.opts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.opt {
+  background: rgb(255 255 255 / 10%);
+  border: 1px solid rgb(191 249 255 / 45%);
+  border-radius: 12px;
+  color: rgb(234 255 255 / 94%);
+  padding: 0.65rem 1rem;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    transform 0.1s;
+  width: 100%;
+}
+.opt:hover:not(:disabled) {
+  background: rgb(255 255 255 / 18%);
+  transform: translateY(-1px);
+}
+.optCorrect {
+  background: rgb(144 229 206 / 35%) !important;
+  border-color: rgb(144 229 206 / 80%) !important;
+  color: #d4fff0 !important;
+}
+.optWrong {
+  background: rgb(240 100 100 / 20%) !important;
+  border-color: rgb(240 150 150 / 60%) !important;
+  color: #ffd4d4 !important;
+}
+
+.progress {
+  text-align: right;
+  font-size: 12px;
+  color: rgb(190 245 255 / 60%);
+  margin-top: 0.8rem;
+}
+
+/* ── Misc ── */
+.hint {
+  font-size: 14px;
+  color: rgb(190 245 255 / 70%);
+}
+.error {
+  color: #ffd4d4;
+}
+
+/* ══════════════════════════════════
+   Done screen
+   ══════════════════════════════════ */
+.doneBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  text-align: center;
+}
+.doneEmoji {
+  font-size: 3rem;
+}
+.doneTitle {
+  font-size: 1.4rem;
+  font-weight: 500;
+}
+
+.solidBtn {
+  background: rgb(144 229 206 / 25%);
+  border: 1px solid rgb(191 249 255 / 68%);
+  color: rgb(220 255 240);
+  border-radius: 999px;
+  padding: 0.6rem 2rem;
+  font-size: 15px;
+  cursor: pointer;
+  margin-top: 0.4rem;
+  transition: background 0.2s;
+}
+.solidBtn:hover {
+  background: rgb(144 229 206 / 40%);
+}
