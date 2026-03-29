@@ -89,8 +89,19 @@
   color: white;
 }
 
-.loadingRobot {
+.loadingSection p {
+  margin: 0;
+  font-size: clamp(1.15rem, 2.4vw, 1.65rem);
+  font-weight: 700;
+}
+
+.mascotGif {
+  width: min(360px, 88vw);
+  height: auto;
+  object-fit: contain;
+  object-position: center;
   border-radius: 20px;
+  display: block;
 }
 
 .playSection {
@@ -115,6 +126,8 @@
 }
 
 .robotImage {
+  width: min(280px, 78vw);
+  height: auto;
   filter: drop-shadow(0 10px 24px rgb(10 53 70 / 35%));
 }
 
@@ -140,6 +153,28 @@
     0 16px 40px rgb(0 20 35 / 35%),
     0 0 0 1px rgb(220 255 255 / 12%) inset;
   color: white;
+}
+
+.finishCard {
+  border-radius: 20px;
+  padding: 1.5rem;
+  border: 1px solid rgb(175 245 235 / 55%);
+  background:
+    linear-gradient(145deg, rgb(26 94 112 / 94%), rgb(13 62 80 / 96%)),
+    radial-gradient(circle at 15% 5%, rgb(255 255 255 / 14%), transparent 42%);
+  box-shadow:
+    0 16px 40px rgb(0 20 35 / 35%),
+    0 0 0 1px rgb(220 255 255 / 16%) inset;
+  color: white;
+}
+
+.finishCard h3 {
+  margin: 0 0 0.7rem;
+}
+
+.finishCard p {
+  margin: 0 0 1rem;
+  color: rgb(236 255 255 / 94%);
 }
 
 .progress {

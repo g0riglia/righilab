@@ -147,7 +147,14 @@ const finalizeTurn = () => {
       {/* 1. LOADING (Appare subito) */}
       {phase === "loading" && (
         <section className={styles.loadingSection}>
-          <Image src="/Robot%20Mascotte%20Assets/4_VID_Caricamento_final.gif" width={250} height={250} alt="Loading" unoptimized />
+          <Image
+            src="/Robot%20Mascotte%20Assets/4_VID_Caricamento_final.gif"
+            width={250}
+            height={250}
+            alt="Loading"
+            unoptimized
+            className={styles.mascotGif}
+          />
           <p>Preparazione Avventura...</p>
         </section>
       )}
@@ -157,7 +164,7 @@ const finalizeTurn = () => {
         <section className={styles.section}>
           <h2>Ops! Qualcosa è andato storto</h2>
           <p>{error}</p>
-          <Button onClick={loadGame}>Riprova</Button>
+          <Button href="/giochi">Riprova</Button>
         </section>
       )}
 
@@ -260,7 +267,14 @@ const finalizeTurn = () => {
       {/* 4. FINE GIOCO */}
       {(phase === "win" || phase === "lose") && (
         <section className={styles.resultSection}>
-          <Image src={phase === "win" ? "/Robot%20Mascotte%20Assets/5_VID_Felice_final.gif" : "/Robot%20Mascotte%20Assets/3_VID_Triste_final.gif"} width={200} height={200} alt="Res" unoptimized />
+          <Image
+            src={phase === "win" ? "/Robot%20Mascotte%20Assets/5_VID_Felice_final.gif" : "/Robot%20Mascotte%20Assets/3_VID_Triste_final.gif"}
+            width={200}
+            height={200}
+            alt="Res"
+            unoptimized
+            className={styles.mascotGif}
+          />
           <h2>{phase === "win" ? "Vittoria!" : "Game Over!"}</h2>
           <Button onClick={loadGame} variant="solid">Gioca Ancora</Button>
         </section>

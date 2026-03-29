@@ -455,7 +455,10 @@ Requisiti:
   if (!text) {
     throw new Error("Errore nel caricamento del gioco. Riprova.");
   }
-  return JSON.parse(text);
+  const parsed = parseJsonFromResponse(text);
+  if (parsed) return parsed;
+  console.warn("[generateGameAssembly] Risposta non valida, inizio:", text.slice(0, 200));
+  throw new Error("Errore nel formato del gioco generato. Riprova.");
 }
 
 // Genera gioco batteria
@@ -505,7 +508,10 @@ Requisiti:
   if (!text) {
     throw new Error("Errore nel caricamento del gioco. Riprova.");
   }
-  return JSON.parse(text);
+  const parsed = parseJsonFromResponse(text);
+  if (parsed) return parsed;
+  console.warn("[generateGameBattery] Risposta non valida, inizio:", text.slice(0, 200));
+  throw new Error("Errore nel formato del gioco generato. Riprova.");
 }
 
 // Genera gioco avventura
@@ -549,7 +555,10 @@ Requisiti:
   if (!text) {
     throw new Error("Errore nel caricamento del gioco. Riprova.");
   }
-  return JSON.parse(text);
+  const parsed = parseJsonFromResponse(text);
+  if (parsed) return parsed;
+  console.warn("[generateGameAdventure] Risposta non valida, inizio:", text.slice(0, 200));
+  throw new Error("Errore nel formato del gioco generato. Riprova.");
 }
 
 //Genera JSON del gioco in base alla chiave ( assembly , battery , adventure )
