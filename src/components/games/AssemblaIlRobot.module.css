@@ -1,0 +1,205 @@
+/* ═══════════════════════════════════════════════
+   AssemblaIlRobot.module.css
+   ═══════════════════════════════════════════════ */
+
+.main {
+  min-height: 100vh;
+  background-image:
+    radial-gradient(1100px 600px at 14% 8%, rgb(158 245 243 / 38%), transparent 55%),
+    radial-gradient(950px 560px at 82% 26%, rgb(114 224 238 / 24%), transparent 58%);
+  background-color: #1b6f81;
+  padding: 2rem 1rem 4rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.2rem;
+  color: white;
+  font-family: inherit;
+}
+
+/* ── Navigation ── */
+.backBtn {
+  align-self: flex-start;
+  background: none;
+  border: 1px solid rgb(191 249 255 / 50%);
+  color: rgb(220 255 255);
+  border-radius: 999px;
+  padding: 0.4rem 1.1rem;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.backBtn:hover { background: rgb(255 255 255 / 10%); }
+
+/* ── Header ── */
+.title {
+  font-size: clamp(1.6rem, 4vw, 2.2rem);
+  text-shadow: 0 3px 12px rgb(15 77 96 / 40%);
+  text-align: center;
+}
+
+.subtitle {
+  font-size: 1rem;
+  color: rgb(220 255 255 / 85%);
+  text-align: center;
+  margin-top: -0.5rem;
+}
+
+/* ══════════════════════════════════
+   Robot stage
+   ══════════════════════════════════ */
+.robotStage {
+  position: relative;
+  width: 260px;
+  height: 320px;
+}
+
+.piece {
+  position: absolute;
+}
+
+.pieceHidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.snap {
+  animation: snapIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.landed {
+  opacity: 1;
+  transform: translate(0, 0) scale(1);
+}
+
+@keyframes snapIn {
+  0%   { opacity: 0; transform: var(--from); }
+  60%  { opacity: 1; transform: translate(0, 0) scale(1.08); }
+  80%  { transform: translate(0, 0) scale(0.96); }
+  100% { opacity: 1; transform: translate(0, 0) scale(1); }
+}
+
+/* ── Piece positions ── */
+.p_testa {
+  top: 0px; left: 30px; width: 200px; height: 106px;
+  
+}
+.p_torso {
+  top: 98px; left: 68px; width: 120px; height: 120px;
+  z-index: 3;
+}
+/* DX = robot's anatomical right = viewer's LEFT */
+.p_bracciodx {
+  top: 112px; right: 19px; width: 60px; height: 108px;
+}
+/* SX = robot's anatomical left = viewer's RIGHT */
+.p_bracciosx {
+  top: 112px; left: 19px; width: 60px; height: 108px;
+}
+.p_gambasx {
+  top: 202px; left: 68px; width: 66px; height: 102px;
+}
+.p_gambadx {
+  top: 202px; right: 68px; width: 66px; height: 102px;
+}
+.p_schermo {
+  top: 30px; left: 78px; width: 98px; height: 60px;
+  z-index: 5;
+}
+
+/* ══════════════════════════════════
+   Question card
+   ══════════════════════════════════ */
+.qcard {
+  background:
+    linear-gradient(145deg, rgb(117 218 226 / 22%), rgb(53 160 181 / 14%)),
+    radial-gradient(circle at 85% 10%, rgb(255 255 255 / 20%), transparent 40%);
+  border: 1px solid rgb(196 250 251 / 42%);
+  border-radius: 20px;
+  box-shadow:
+    0 14px 30px rgb(7 39 54 / 18%),
+    0 0 0 1px rgb(221 255 255 / 14%) inset;
+  backdrop-filter: blur(7px);
+  padding: 1.5rem;
+  width: min(100%, 460px);
+}
+
+.pieceLabel {
+  font-size: 13px;
+  color: rgb(190 245 255 / 80%);
+  margin-bottom: 0.5rem;
+}
+.pieceLabel strong { color: rgb(220 255 255); }
+
+.question {
+  font-size: 1.05rem;
+  font-weight: 500;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+}
+
+.opts { display: flex; flex-direction: column; gap: 0.45rem; }
+
+.opt {
+  background: rgb(255 255 255 / 10%);
+  border: 1px solid rgb(191 249 255 / 45%);
+  border-radius: 12px;
+  color: rgb(234 255 255 / 94%);
+  padding: 0.65rem 1rem;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.1s;
+  width: 100%;
+}
+.opt:hover:not(:disabled) {
+  background: rgb(255 255 255 / 18%);
+  transform: translateY(-1px);
+}
+.optCorrect {
+  background: rgb(144 229 206 / 35%) !important;
+  border-color: rgb(144 229 206 / 80%) !important;
+  color: #d4fff0 !important;
+}
+.optWrong {
+  background: rgb(240 100 100 / 20%) !important;
+  border-color: rgb(240 150 150 / 60%) !important;
+  color: #ffd4d4 !important;
+}
+
+.progress {
+  text-align: right;
+  font-size: 12px;
+  color: rgb(190 245 255 / 60%);
+  margin-top: 0.8rem;
+}
+
+/* ── Misc ── */
+.hint  { font-size: 14px; color: rgb(190 245 255 / 70%); }
+.error { color: #ffd4d4; }
+
+/* ══════════════════════════════════
+   Done screen
+   ══════════════════════════════════ */
+.doneBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  text-align: center;
+}
+.doneEmoji { font-size: 3rem; }
+.doneTitle  { font-size: 1.4rem; font-weight: 500; }
+
+.solidBtn {
+  background: rgb(144 229 206 / 25%);
+  border: 1px solid rgb(191 249 255 / 68%);
+  color: rgb(220 255 240);
+  border-radius: 999px;
+  padding: 0.6rem 2rem;
+  font-size: 15px;
+  cursor: pointer;
+  margin-top: 0.4rem;
+  transition: background 0.2s;
+}
+.solidBtn:hover { background: rgb(144 229 206 / 40%); }
