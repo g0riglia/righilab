@@ -1,5 +1,7 @@
+"use client";
+
 import styles from "./Footer.module.css";
-import Link from "next/link";
+import TransitionLink from "@/components/TransitionLink";
 import { SITE_TITLE } from "@/utils/constants";
 
 function Footer() {
@@ -10,9 +12,9 @@ function Footer() {
       <div className={styles.inner}>
         <p className={styles.brand}>{SITE_TITLE}</p>
         <nav aria-label="Link footer" className={styles.links}>
-          <Link href="/">Home</Link>
-          <Link href="/upload">Inizia</Link>
-          <Link href="/#come-funziona">Come funziona</Link>
+          <TransitionLink href="/">Home</TransitionLink>
+          <TransitionLink href="/upload">Inizia</TransitionLink>
+          <TransitionLink href="/#come-funziona">Come funziona</TransitionLink>
         </nav>
         <p className={styles.copy}>© {year} {SITE_TITLE}. Tutti i diritti riservati.</p>
       </div>

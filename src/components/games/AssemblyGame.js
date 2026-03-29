@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, startTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useLesson } from "@/components/LessonProvider";
 import Image from "next/image";
@@ -69,7 +69,9 @@ export default function AssemblaIlRobot() {
 
   useEffect(() => {
     if (!lesson) {
-      router.push("/upload");
+      startTransition(() => {
+        router.push("/upload");
+      });
       return;
     }
     fetch("/api/generate-game", {
@@ -77,7 +79,11 @@ export default function AssemblaIlRobot() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         gameKey: "assembly",
-        lesson: { title: lesson.title, sections: lesson.sections },
+        lesson: {
+          title: lesson.title,
+          sections: lesson.sections ?? [],
+          bodyMdx: typeof lesson.bodyMdx === "string" ? lesson.bodyMdx : "",
+        },
       }),
     })
       .then((r) => r.json())
@@ -148,7 +154,15 @@ export default function AssemblaIlRobot() {
 
   return (
     <main className={styles.main}>
-      <button onClick={() => router.push("/giochi")} className={styles.backBtn}>
+      <button
+        type="button"
+        onClick={() =>
+          startTransition(() => {
+            router.push("/giochi");
+          })
+        }
+        className={styles.backBtn}
+      >
         ← Torna ai giochi
       </button>
 
@@ -274,7 +288,15 @@ export default function AssemblaIlRobot() {
         <div className={styles.doneBox}>
           <p className={styles.doneEmoji}>🎉</p>
           <p className={styles.doneTitle}>Robot completato!</p>
-          <button onClick={() => router.push("/giochi")} className={styles.solidBtn}>
+          <button
+            type="button"
+            onClick={() =>
+              startTransition(() => {
+                router.push("/giochi");
+              })
+            }
+            className={styles.solidBtn}
+          >
             Torna ai giochi
           </button>
         </div>

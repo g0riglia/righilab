@@ -2,7 +2,7 @@
 import useWindowSize from "@/hooks/useWindowSize";
 import styles from "./Header.module.css"
 import Image from "next/image";
-import Link from "next/link";
+import TransitionLink from "@/components/TransitionLink";
 import { NAVBAR_LINKS } from "@/utils/constants";
 
 function DesktopNav() {
@@ -11,7 +11,7 @@ function DesktopNav() {
 
     return (
         <div className={styles.desktopContainer}>
-            <Link href="/" className={styles.desktopLogoLink}>
+            <TransitionLink href="/" className={styles.desktopLogoLink}>
                 <Image
                     src={isCompactLogo ? "/logo.png" : "/full-logo.png"}
                     alt="Il logo del sito, rappresentante la testa stilizzata in stile cartoon di un robot"
@@ -20,19 +20,21 @@ function DesktopNav() {
                     className={styles.desktopLogoImage}
                     priority
                 />
-            </Link>
+            </TransitionLink>
             <nav className={styles.desktopNavbar}>
                 <ul>
                     {NAVBAR_LINKS.map((item) => (
                         <li key={item.name}>
-                            <Link href={item.route}>{item.name}</Link>
+                            <TransitionLink href={item.route}>{item.name}</TransitionLink>
                         </li>
                     ))}
                 </ul>
             </nav>
             {width < 768 ? <div className={styles.placeholder}></div>
                 :
-                <Link href="/upload" className={styles.cta}>Prova ora</Link>
+                <TransitionLink href="/upload" className={styles.cta}>
+                  Prova ora
+                </TransitionLink>
             }
         </div>
     )

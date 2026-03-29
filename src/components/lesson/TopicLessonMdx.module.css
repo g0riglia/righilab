@@ -1,0 +1,104 @@
+.status {
+  margin: 0;
+  text-align: center;
+  color: rgb(220 255 255 / 88%);
+  font-size: 0.95rem;
+}
+
+.error {
+  margin: 0;
+  padding: 1rem;
+  border-radius: 12px;
+  background: rgb(200 60 60 / 18%);
+  border: 1px solid rgb(255 160 160 / 45%);
+  color: #ffe4e4;
+  font-size: 0.9rem;
+}
+
+.topicMdx {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  text-align: left;
+  line-height: 1.65;
+  font-size: 1.02rem;
+  color: rgb(248 255 255 / 96%);
+}
+
+.topicMdx :global(h2) {
+  margin: 1.75rem 0 0.65rem;
+  font-size: clamp(1.35rem, 3vw, 1.65rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: rgb(255 255 255);
+  text-shadow: 0 2px 14px rgb(10 50 60 / 35%);
+}
+
+.topicMdx :global(h3) {
+  margin: 1.35rem 0 0.45rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: rgb(230 255 255 / 98%);
+}
+
+.topicMdx :global(p) {
+  margin: 0.65rem 0;
+}
+
+.topicMdx :global(ul),
+.topicMdx :global(ol) {
+  margin: 0.5rem 0 0.75rem;
+  padding-left: 1.35rem;
+}
+
+.topicMdx :global(li) {
+  margin: 0.35rem 0;
+}
+
+.topicMdx :global(li::marker) {
+  color: rgb(170 245 255 / 90%);
+}
+
+.topicMdx :global(strong) {
+  font-weight: 800;
+  color: rgb(255 255 255);
+}
+
+.topicMdx :global(a) {
+  color: rgb(186 255 240);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.topicMdx :global(a:hover) {
+  color: rgb(220 255 250);
+}
+
+.topicMdx :global(blockquote) {
+  margin: 1rem 0;
+  padding: 0.75rem 1rem 0.75rem 1.1rem;
+  border-left: 4px solid rgb(144 229 206 / 85%);
+  background: rgb(0 40 50 / 22%);
+  border-radius: 0 12px 12px 0;
+  color: rgb(233 255 250 / 94%);
+}
+
+.topicMdx :global(blockquote p) {
+  margin: 0.35rem 0;
+}
+
+/* Blocchi codice (rehype-pretty-code / Shiki) */
+.topicMdx :global(pre) {
+  margin: 1rem 0;
+  padding: 1rem 1.1rem;
+  border-radius: 14px;
+  overflow-x: auto;
+  box-shadow: 0 12px 28px rgb(5 25 35 / 35%);
+  border: 1px solid rgb(255 255 255 / 12%);
+}
+
+.topicMdx :global(pre code) {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
