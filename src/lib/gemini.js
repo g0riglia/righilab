@@ -137,16 +137,12 @@ const ADVENTURE_JSON_SCHEMA = {
         type: "object",
         properties: {
           id: { type: "string" },
-          label: { type: "string", description: "Label checkpoint sulla mappa" },
           question: { type: "string" },
           options: { type: "array", items: { type: "string" } },
           correctIndex: { type: "integer" },
-          itemReward: { type: "string", description: "Oggetto ottenuto (opzionale): chiave, monete, etc." },
         },
-        required: ["id", "label", "question", "options", "correctIndex"],
+        required: ["id","question", "options", "correctIndex"],
       },
-      minItems: 3,
-      maxItems: 6,
     },
   },
   required: ["steps"],
@@ -519,16 +515,18 @@ export async function generateGameAdventure(lessonSummary) {
     .map((s) => `${s.title}: ${s.content}`)
     .join("\n");
 
-  const prompt = `Genera i passaggi per il gioco "Avventura" (mappa, checkpoint, domande).
-Ogni passo ha una domanda; risposta corretta = avanzamento. Alcuni passi possono dare itemReward (chiave, monete).
+  const prompt = `Genera 25 domande sulla seguente lezione:
+  ${lessonSummary.title || "Lezione"}
+  ${sectionsText}
 
-LEZIONE:
-Titolo: ${lessonSummary.title || "Lezione"}
-${sectionsText}
+Usa un MIX di questi tipi (almeno 1 di ogni tipo):
+1. type: "true_false" - statement (affermazione), correctAnswer (true/false)
+2. type: "multiple_choice" - question, options (4 opzioni), correctIndex (0-3)
+3. type: "complete_sentence" - sentence (frase con ___ al posto della parola mancante), options (4), correctIndex
 
 Requisiti:
-- 3-6 steps, ognuno: id, label (es. "Inizio", "Bivio", "Scrigno"), question, options (4), correctIndex
-- itemReward opzionale su alcuni step
+- 25 domande precise
+- Variare i tipi (vero/falso, multipla, completa frase)
 - Domande basate sulla lezione
 - Lingua italiana
 - Rispondi SOLO con JSON valido`;
@@ -539,7 +537,7 @@ Requisiti:
     config: {
       responseMimeType: "application/json",
       responseJsonSchema: ADVENTURE_JSON_SCHEMA,
-      maxOutputTokens: 2048,
+      maxOutputTokens: 8192,
       temperature: 0.6,
       safetySettings: SAFETY_SETTINGS,
     },

@@ -23,3 +23,9 @@ export function getQuestionsForDifficulty(difficultyId, allQuestions) {
   const shuffled = [...(allQuestions || [])].sort(() => Math.random() - 0.5);
   return shuffled.slice(0, count);
 }
+
+export function getQuestionsForAdventure(allQuestions) {
+  const count = 25;
+  const shuffled = [...(allQuestions || [])].sort(() => Math.random() - 0.5);
+  return shuffled.slice(0, count);
+}

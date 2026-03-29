@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import Button from "@/components/Button";
 import { getGameBySlug } from "@/utils/games";
 import BatteryGame from "@/components/games/BatteryGame";
+import AdventureGame from "@/components/games/AdventureGame";
 
 export default function GamePage() {
   const params = useParams();
@@ -23,6 +24,18 @@ export default function GamePage() {
           <h1>{game.name}</h1>
           <p className={styles.description}>{game.description}</p>
           <BatteryGame />
+        </section>
+      </main>
+    );
+  }
+    if (game.providerKey === "adventure") {
+    return (
+      <main className={styles.main}>
+        <section className={styles.gameSection}>
+          <p className={styles.eyebrow}>Gioco</p>
+          <h1>{game.name}</h1>
+          <p className={styles.description}>{game.description}</p>
+          <AdventureGame />
         </section>
       </main>
     );
