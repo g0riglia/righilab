@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import styles from "./Header.module.css";
 import { Menu, X } from "react-feather";
-import Link from "next/link";
+import TransitionLink from "@/components/TransitionLink";
 import Image from "next/image";
 import { NAVBAR_LINKS } from "@/utils/constants";
 
@@ -28,7 +28,7 @@ function MobileNav() {
     return (
         <div className={styles.mobileContainer}>
             <div className={styles.mobileHeader}>
-                <Link href="/"><Image src="/logo.png" alt="Il logo del sito, rappresentante la testa stilizzata in stile cartoon di un robot" width={50} height={45} /></Link>
+                <TransitionLink href="/"><Image src="/logo.png" alt="Il logo del sito, rappresentante la testa stilizzata in stile cartoon di un robot" width={50} height={45} /></TransitionLink>
                 <motion.button
                     className={styles.hamburgerButton}
                     onClick={() => setIsExpanded((prev) => !prev)}
@@ -82,7 +82,9 @@ function MobileNav() {
                                         exit={{ opacity: 0, y: -8 }}
                                         transition={{ delay: 0.06 + (index * 0.05), duration: 0.18 }}
                                     >
-                                        <Link href={item.route} onClick={() => setIsExpanded(false)}>{item.name}</Link>
+                                        <TransitionLink href={item.route} onClick={() => setIsExpanded(false)}>
+                                          {item.name}
+                                        </TransitionLink>
                                     </motion.li>
                                 ))}
                                 <motion.li
@@ -92,7 +94,9 @@ function MobileNav() {
                                     exit={{ opacity: 0, y: -8 }}
                                     transition={{ delay: 0.06 + (NAVBAR_LINKS.length * 0.05), duration: 0.18 }}
                                 >
-                                    <Link href="/upload" className={styles.cta}>Prova ora</Link>
+                                    <TransitionLink href="/upload" className={styles.cta}>
+                                      Prova ora
+                                    </TransitionLink>
                                 </motion.li>
                             </ul>
                         </motion.nav>

@@ -66,6 +66,8 @@ function HowToShot({ src, alt }) {
 function lessonStableKey(lesson) {
   if (!lesson) return "";
   try {
+    const mdx = typeof lesson.bodyMdx === "string" ? lesson.bodyMdx.trim() : "";
+    if (mdx) return `${lesson.title || ""}::mdx::${mdx.slice(0, 12000)}`;
     return `${lesson.title}::${JSON.stringify(lesson.sections ?? [])}`;
   } catch {
     return lesson.title ?? "";
@@ -211,7 +213,13 @@ export default function AdventureGame() {
           body: JSON.stringify({
             gameKey: "adventure",
             difficulty: "medio",
-            lesson: lesson ? { title: lesson.title, sections: lesson.sections } : { title: "Lezione", sections: [] },
+            lesson: lesson
+              ? {
+                  title: lesson.title,
+                  sections: lesson.sections ?? [],
+                  bodyMdx: typeof lesson.bodyMdx === "string" ? lesson.bodyMdx : "",
+                }
+              : { title: "Lezione", sections: [], bodyMdx: "" },
           }),
         });
 

@@ -4,6 +4,7 @@ import styles from "./page.module.css";
 import Image from "next/image";
 import Button from "@/components/Button";
 import { useLesson } from "@/components/LessonProvider";
+import TopicLessonMdx from "@/components/lesson/TopicLessonMdx";
 
 export default function LezionePage() {
   const { lesson } = useLesson();
@@ -34,6 +35,7 @@ export default function LezionePage() {
 
   const method = lesson.source?.method || "notes";
   const sections = lesson.sections || [];
+  const topicMdx = typeof lesson.bodyMdx === "string" ? lesson.bodyMdx.trim() : "";
 
   const ctaSection = (
     <section className={`${styles.sectionBlock} ${styles.ctaSection}`}>
@@ -154,35 +156,48 @@ export default function LezionePage() {
     );
   }
 
-  // 3. ARGOMENTO: lezione completa e dettagliata
+  // 3. ARGOMENTO: articolo MDX (evidenza codice con Bright) o fallback sezioni legacy
   if (method === "topic") {
     return (
       <main className={styles.main}>
         {ctaSection}
         {heroSection}
-        {sections.length > 0 && (
-          <section className={styles.sectionBlock}>
+        {topicMdx ? (
+          <section className={`${styles.sectionBlock} ${styles.topicMdxSection}`}>
             <div className={styles.sectionHeader}>
               <p className={styles.eyebrow}>Lezione</p>
-              <h2>Spiegazione completa</h2>
+              <h2>Articolo guidato</h2>
+              <p className={styles.topicMdxLead}>
+                Scorri il percorso: titoli, box colorati e, dove serve, codice evidenziato.
+              </p>
             </div>
-            <div className={styles.topicSections}>
-              {sections.map((section, index) => (
-                <article key={section.title || index} className={styles.topicCard}>
-                  <span className={styles.lessonIndex}>0{index + 1}</span>
-                  <h3>{section.title}</h3>
-                  <div className={styles.topicContent}>
-                    <p>{section.content}</p>
-                  </div>
-                  <ul className={styles.bulletList}>
-                    {(section.bullets || []).map((bullet) => (
-                      <li key={bullet}>{bullet}</li>
-                    ))}
-                  </ul>
-                </article>
-              ))}
-            </div>
+            <TopicLessonMdx bodyMdx={lesson.bodyMdx} />
           </section>
+        ) : (
+          sections.length > 0 && (
+            <section className={styles.sectionBlock}>
+              <div className={styles.sectionHeader}>
+                <p className={styles.eyebrow}>Lezione</p>
+                <h2>Spiegazione completa</h2>
+              </div>
+              <div className={styles.topicSections}>
+                {sections.map((section, index) => (
+                  <article key={section.title || index} className={styles.topicCard}>
+                    <span className={styles.lessonIndex}>0{index + 1}</span>
+                    <h3>{section.title}</h3>
+                    <div className={styles.topicContent}>
+                      <p>{section.content}</p>
+                    </div>
+                    <ul className={styles.bulletList}>
+                      {(section.bullets || []).map((bullet) => (
+                        <li key={bullet}>{bullet}</li>
+                      ))}
+                    </ul>
+                  </article>
+                ))}
+              </div>
+            </section>
+          )
         )}
       </main>
     );

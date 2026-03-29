@@ -1,6 +1,6 @@
 "use client";
 import styles from "./page.module.css";
-import Link from "next/link";
+import TransitionLink from "@/components/TransitionLink";
 import Image from "next/image";
 import { Fragment } from "react";
 import { motion } from "motion/react";
@@ -47,11 +47,11 @@ export default function Home() {
                   whileHover={{ y: -6, scale: 1.01 }}
                 >
                   {item.href ? (
-                    <Link href={item.href} className={styles.cardLink}>
+                    <TransitionLink href={item.href} className={styles.cardLink}>
                       <Image src={item.img} alt={item.alt} width={100} height={100} />
                       <h3>{item.title}</h3>
                       <p>{item.content}</p>
-                    </Link>
+                    </TransitionLink>
                   ) : (
                     <>
                       <Image src={item.img} alt={item.alt} width={100} height={100} />
@@ -80,7 +80,9 @@ export default function Home() {
           <h2>Chi siamo</h2>
           <div className={styles.aboutUsSections}>
             <div className={styles.aboutUsContainer}>
-              <p>Questo progetto nasce per i <Link href="https://www.campionatidirobotica.it">Campionati Italiani di Robotica 2025-2026</Link>.
+              <p>
+                Questo progetto nasce per i{" "}
+                <a href="https://www.campionatidirobotica.it">Campionati Italiani di Robotica 2025-2026</a>.
                 Il tema scelto è &quot;imparare giocando&quot;, e da questa idea è nata RighiLab: una piattaforma che trasforma appunti e video in giochi educativi guidati da un robot.</p>
               <Image src="/chisiamo.png" alt="Un robot che vola felice insieme a mille progetti.." width="350" height="220" />
             </div>

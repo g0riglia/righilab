@@ -27,22 +27,48 @@ function getClient() {
   return new GoogleGenAI({ apiKey });
 }
 
-// json lezione
+const LESSON_SECTION_ITEM = {
+  type: "object",
+  properties: {
+    title: { type: "string" },
+    content: { type: "string" },
+    bullets: { type: "array", items: { type: "string" } },
+    timestamp: { type: "string", description: "Per video: es. '0:00-2:30' o 'Parte 1'" },
+  },
+  required: ["title", "content", "bullets"],
+};
+
+const LESSON_SOURCE_SCHEMA = {
+  type: "object",
+  properties: {
+    method: { type: "string", enum: ["notes", "video", "topic"] },
+    label: { type: "string" },
+    items: { type: "array", items: { type: "string" } },
+  },
+  required: ["method", "label", "items"],
+};
+
+const LESSON_MINIGAMES_SCHEMA = {
+  type: "array",
+  items: {
+    type: "object",
+    properties: {
+      title: { type: "string" },
+      description: { type: "string" },
+      objective: { type: "string" },
+    },
+    required: ["title", "description", "objective"],
+  },
+};
+
+// json lezione (appunti / video — sezioni strutturate)
 const LESSON_JSON_SCHEMA = {
   type: "object",
   properties: {
     id: { type: "string", description: "Identificativo univoco della lezione" },
     title: { type: "string", description: "Titolo della lezione" },
     description: { type: "string", description: "Breve descrizione" },
-    source: {
-      type: "object",
-      properties: {
-        method: { type: "string", enum: ["notes", "video", "topic"] },
-        label: { type: "string" },
-        items: { type: "array", items: { type: "string" } },
-      },
-      required: ["method", "label", "items"],
-    },
+    source: LESSON_SOURCE_SCHEMA,
     objectives: {
       type: "array",
       items: { type: "string" },
@@ -50,32 +76,48 @@ const LESSON_JSON_SCHEMA = {
     },
     sections: {
       type: "array",
-      items: {
-        type: "object",
-        properties: {
-          title: { type: "string" },
-          content: { type: "string" },
-          bullets: { type: "array", items: { type: "string" } },
-          timestamp: { type: "string", description: "Per video: es. '0:00-2:30' o 'Parte 1'" },
-        },
-        required: ["title", "content", "bullets"],
-      },
+      items: LESSON_SECTION_ITEM,
     },
-    miniGames: {
-      type: "array",
-      items: {
-        type: "object",
-        properties: {
-          title: { type: "string" },
-          description: { type: "string" },
-          objective: { type: "string" },
-        },
-        required: ["title", "description", "objective"],
-      },
-    },
+    miniGames: LESSON_MINIGAMES_SCHEMA,
   },
   required: ["id", "title", "description", "source", "objectives", "sections", "miniGames"],
 };
+
+// json lezione da argomento: corpo MDX + stessi metadati
+const LESSON_JSON_SCHEMA_TOPIC = {
+  type: "object",
+  properties: {
+    id: { type: "string", description: "Identificativo univoco della lezione" },
+    title: { type: "string", description: "Titolo della lezione" },
+    description: { type: "string", description: "Breve descrizione" },
+    source: LESSON_SOURCE_SCHEMA,
+    objectives: {
+      type: "array",
+      items: { type: "string" },
+      description: "Obiettivi di apprendimento",
+    },
+    bodyMdx: {
+      type: "string",
+      description:
+        "Articolo MDX unico della lezione: heading ## ###, grassetto, liste, blockquote >, link [testo](url), e blocchi codice con fence e linguaggio (es. ```js ... ```). Nessun import JSX custom; solo Markdown/MDX standard.",
+    },
+    miniGames: LESSON_MINIGAMES_SCHEMA,
+  },
+  required: ["id", "title", "description", "source", "objectives", "bodyMdx", "miniGames"],
+};
+
+/**
+ * Testo da passare ai generatori di giochi (contesto dalla lezione).
+ * @param {{ title?: string, sections?: object[], bodyMdx?: string }} lesson
+ * @returns {string}
+ */
+export function buildLessonContextText(lesson) {
+  if (!lesson) return "";
+  const mdx = typeof lesson.bodyMdx === "string" ? lesson.bodyMdx.trim() : "";
+  if (mdx) return mdx.slice(0, 20000);
+  const sections = lesson.sections || [];
+  return sections.map((s) => `${s.title}: ${s.content}`).join("\n");
+}
 
 // json gioco assemblaggio
 const ASSEMBLY_JSON_SCHEMA = {
@@ -366,33 +408,41 @@ Requisiti per VIDEO:
 - id: "lesson-video"
 - Stile: narrativo, chiaro, nessun dettaglio perso`,
 
-    argomento: `Sei un assistente didattico. L'utente ha scelto ARGOMENTI senza avere appunti: vuole STUDIARE da zero una lezione completa e dettagliata.
+    argomento: `Sei un assistente didattico. L'utente ha scelto ARGOMENTI senza avere appunti: vuole STUDIARE da zero una lezione completa e dettagliata, presentata come articolo ricco (MDX).
 
 ARGOMENTI DA SPIEGARE:
 ${content}
 
-Requisiti per ARGOMENTO:
-- Lezione COMPLETA e DETTAGLIATA: spiega tutto bene, come se fosse un corso
-- Stile giovanile e giocoso ma senza sacrificare chiarezza e completezza
-- 4-6 sezioni (una per argomento o per tema correlato): titolo, content (testo chiaro), bullets (2-4 punti)
-- Contenuti bilanciati: non troppo lunghi per sezione per evitare troncamenti
-- L'utente non ha materiale: deve poter studiare solo da questa lezione
-- 3 mini-giochi per ripassare (title, description, objective brevi)
+Requisiti per ARGOMENTO (campo bodyMdx):
+- Scrivi UN SOLO articolo in MDX nel campo bodyMdx: lezione completa, chiara, con ritmo vivace (titoli, enfasi, esempi, domande retoriche dove serve).
+- Struttura suggerita: usa ## per le grandi parti e ### per sotto-parti; elenchi puntati o numerati; **grassetto** per concetti chiave; > citazione/blockquote per "tip", "attenzione" o box didattici.
+- Dove ha senso, includi snippet di codice con fence e linguaggio, es: \`\`\`js ... \`\`\` o \`\`\`python ... \`\`\` (il frontend evidenzierà la sintassi).
+- Nessun import o componente JSX custom nel MDX: solo sintassi Markdown/MDX standard (heading, link, liste, code fence, enfasi).
+- NON usare raw HTML pericoloso; per i link usa solo [testo](https://...).
+- Obiettivi (objectives): 3-5 punti chiaro in italiano.
+- 3 mini-giochi (miniGames: title, description, objective brevi).
 - source.method="topic", source.label="${label}", source.items = ${JSON.stringify(items)}
 - id: "lesson-topic"
-- JSON valido: solo virgolette doppie, niente a capo non escapati (usa \\n per andare a capo nei testi)`,
+- description: una riga che invita a leggere l'articolo.
+- Nel JSON escapa i caratteri nelle stringhe (bodyMdx può contenere \\n per a capo).`,
   };
+
+  const schema = inputType === "argomento" ? LESSON_JSON_SCHEMA_TOPIC : LESSON_JSON_SCHEMA;
+  const schemaHint =
+    inputType === "argomento"
+      ? "id, title, description, source, objectives, bodyMdx, miniGames (nessun campo sections)."
+      : "id, title, description, source, objectives, sections, miniGames";
 
   const prompt = (prompts[inputType] || prompts.appunti) + `
 
-Rispondi SOLO con JSON valido (schema: id, title, description, source, objectives, sections, miniGames). Nessun testo prima o dopo.`;
+Rispondi SOLO con JSON valido (schema: ${schemaHint}). Nessun testo prima o dopo.`;
 
   const response = await ai.models.generateContent({
     model: MODEL,
     contents: prompt,
     config: {
       responseMimeType: "application/json",
-      responseJsonSchema: LESSON_JSON_SCHEMA,
+      responseJsonSchema: schema,
       maxOutputTokens: inputType === "argomento" ? MAX_LESSON_TOKENS : MAX_OUTPUT_TOKENS,
       temperature: inputType === "argomento" ? 0.5 : 0.7,
       safetySettings: SAFETY_SETTINGS,
@@ -406,7 +456,13 @@ Rispondi SOLO con JSON valido (schema: id, title, description, source, objective
     throw new Error("Errore nel caricamento della lezione. Riprova.");
   }
   const parsed = parseJsonFromResponse(text);
-  if (parsed) return parsed;
+  if (parsed) {
+    if (inputType === "argomento") {
+      parsed.sections = [];
+      if (typeof parsed.bodyMdx !== "string") parsed.bodyMdx = "";
+    }
+    return parsed;
+  }
   console.warn("[generateLesson] Risposta non valida, inizio:", text.slice(0, 200));
   throw new Error("Errore nel formato della lezione generata. Riprova.");
 }
@@ -420,9 +476,7 @@ Rispondi SOLO con JSON valido (schema: id, title, description, source, objective
  */
 export async function generateGameAssembly(lessonSummary) {
   const ai = getClient();
-  const sectionsText = (lessonSummary.sections || [])
-    .map((s) => `${s.title}: ${s.content}`)
-    .join("\n");
+  const sectionsText = buildLessonContextText(lessonSummary);
 
   const prompt = `Genera domande a risposta multipla per il gioco "Assembla il robot".
 Per ogni risposta corretta il giocatore ottiene un pezzo del robot (ordine: testa, braccio-dx, braccio-sx, gamba-dx, gamba-sx, torso, schermo).
@@ -461,9 +515,7 @@ Requisiti:
 // Genera gioco batteria
 export async function generateGameBattery(lessonSummary, difficulty = "medio") {
   const ai = getClient();
-  const sectionsText = (lessonSummary.sections || [])
-    .map((s) => `${s.title}: ${s.content}`)
-    .join("\n");
+  const sectionsText = buildLessonContextText(lessonSummary);
 
   const countByDiff = { facile: 7, medio: 6, difficile: 5 };
   const count = countByDiff[difficulty] ?? 6;
@@ -511,9 +563,7 @@ Requisiti:
 // Genera gioco avventura
 export async function generateGameAdventure(lessonSummary) {
   const ai = getClient();
-  const sectionsText = (lessonSummary.sections || [])
-    .map((s) => `${s.title}: ${s.content}`)
-    .join("\n");
+  const sectionsText = buildLessonContextText(lessonSummary);
 
   const prompt = `Genera 25 domande sulla seguente lezione:
   ${lessonSummary.title || "Lezione"}
