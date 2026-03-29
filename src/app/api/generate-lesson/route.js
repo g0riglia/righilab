@@ -95,6 +95,9 @@ export async function POST(request) {
     console.error("[generate-lesson]", err);
     let message = err?.message || "Errore nella generazione della lezione. Riprova.";
     if (err?.cause?.message) message = err.cause.message;
+    if (message.includes("GEMINI_API_KEY non definita")) {
+      message = "Configurazione AI mancante. Crea .env.local, aggiungi GEMINI_API_KEY e riavvia il server.";
+    }
     if (message.includes("404") || message.includes("NOT_FOUND")) {
       message = "Modello AI non disponibile. Controlla la configurazione.";
     }
