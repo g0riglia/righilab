@@ -3,28 +3,47 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useLesson } from "@/components/LessonProvider";
 import Image from "next/image";
-import styles from "./AssemblaIlRobot.module.css";
+import styles from "./AssemblyGame.module.css";
 
 const BASE = "/Robot%20Mascotte%20Game%20Assets";
 
-const PIECE_META = {
-  torso:     { label: "Torso",      img: `${BASE}/GIOCO_ASSEMBLAGGIO_Robot_Torso.png` },
-  bracciodx: { label: "Braccio Dx", img: `${BASE}/GIOCO_ASSEMBLAGGIO_Robot_BraccioDX.png` },
-  bracciosx: { label: "Braccio Sx", img: `${BASE}/GIOCO_ASSEMBLAGGIO_Robot_BraccioSX.png` },
-  gambadx:   { label: "Gamba Dx",   img: `${BASE}/GIOCO_ASSEMBLAGGIO_Robot_GambaDX.png` },
-  gambasx:   { label: "Gamba Sx",   img: `${BASE}/GIOCO_ASSEMBLAGGIO_Robot_GambaSX.png` },
-  testa:     { label: "Testa",      img: `${BASE}/GIOCO_ASSEMBLAGGIO_Robot_Testa.png` },   // ← after torso
-  schermo:   { label: "Schermo",    img: `${BASE}/GIOCO_ASSEMBLAGGIO_Robot_SchermoFaccia.png` },
-};
-
-const FROM_MAP = {
-  testa:     "translateY(-80px) scale(0.5)",
-  torso:     "scale(0.3)",
-  bracciodx: "translateX(-80px)", // DX is on the LEFT visually → flies in from left
-  bracciosx: "translateX(80px)",  // SX is on the RIGHT visually → flies in from right
-  gambadx:   "translateY(80px)",
-  gambasx:   "translateY(80px)",
-  schermo:   "scale(0.2)",
+/** Metadati UI per ogni pezzo: etichetta, immagine, trasformazione iniziale dell’animazione “snap”. */
+const PIECE_UI = {
+  torso: {
+    label: "Torso",
+    img: `${BASE}/GIOCO_ASSEMBLAGGIO_Robot_Torso.png`,
+    from: "scale(0.3)",
+  },
+  bracciodx: {
+    label: "Braccio Dx",
+    img: `${BASE}/GIOCO_ASSEMBLAGGIO_Robot_BraccioDX.png`,
+    from: "translateX(-80px)",
+  },
+  bracciosx: {
+    label: "Braccio Sx",
+    img: `${BASE}/GIOCO_ASSEMBLAGGIO_Robot_BraccioSX.png`,
+    from: "translateX(80px)",
+  },
+  gambadx: {
+    label: "Gamba Dx",
+    img: `${BASE}/GIOCO_ASSEMBLAGGIO_Robot_GambaDX.png`,
+    from: "translateY(80px)",
+  },
+  gambasx: {
+    label: "Gamba Sx",
+    img: `${BASE}/GIOCO_ASSEMBLAGGIO_Robot_GambaSX.png`,
+    from: "translateY(80px)",
+  },
+  testa: {
+    label: "Testa",
+    img: `${BASE}/GIOCO_ASSEMBLAGGIO_Robot_Testa.png`,
+    from: "translateY(-80px) scale(0.5)",
+  },
+  schermo: {
+    label: "Schermo",
+    img: `${BASE}/GIOCO_ASSEMBLAGGIO_Robot_SchermoFaccia.png`,
+    from: "scale(0.2)",
+  },
 };
 
 /** Normalise hyphenated IDs (e.g. "braccio-dx") to the key format used by PIECE_META */
@@ -35,17 +54,18 @@ export default function AssemblaIlRobot() {
   const { lesson } = useLesson();
 
   const [gameData, setGameData] = useState(null);
-  const [loading, setLoading]   = useState(true);
-  const [error, setError]       = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   // Quiz state
-  const [current,  setCurrent]  = useState(0);
-  const [assembled, setAssembled] = useState([]);   // fully shown pieces
-  const [snapping,  setSnapping]  = useState(null); // piece currently animating
-  const [snapped,   setSnapped]   = useState([]);   // pieces whose animation just finished
-  const [selected,  setSelected]  = useState(null);
-  const [feedback,  setFeedback]  = useState(null); // "correct" | "wrong"
-  const [done,      setDone]      = useState(false);
+  /** Indice in `pieces` del pezzo scelto dalla barra (null = scegli prima un pezzo). */
+  const [activeIndex, setActiveIndex] = useState(null);
+  const [assembled, setAssembled] = useState([]); // fully shown pieces
+  const [snapping, setSnapping] = useState(null); // piece currently animating
+  const [snapped, setSnapped] = useState([]); // pieces whose animation just finished
+  const [selected, setSelected] = useState(null);
+  const [feedback, setFeedback] = useState(null); // "correct" | "wrong"
+  const [done, setDone] = useState(false);
 
   useEffect(() => {
     if (!lesson) {
@@ -72,32 +92,44 @@ export default function AssemblaIlRobot() {
   if (!lesson) return null;
 
   const pieces = [...(gameData?.pieces || [])].sort((a, b) => a.order - b.order);
-  const piece  = pieces[current];
+  const piece = activeIndex !== null ? pieces[activeIndex] : null;
+  const activeTargetMeta = piece ? PIECE_UI[normalizeId(piece.id)] : null;
+
+  const isPieceOnRobot = (nid) =>
+    assembled.includes(nid) || snapped.includes(nid) || snapping === nid;
+
+  const selectTrayPiece = (index) => {
+    if (feedback) return;
+    const nid = normalizeId(pieces[index]?.id);
+    if (!nid || isPieceOnRobot(nid)) return;
+    setActiveIndex(index);
+    setSelected(null);
+  };
 
   const handleAnswer = (idx) => {
-    if (feedback) return;
+    if (feedback || !piece) return;
     setSelected(idx);
 
     if (idx === piece.correctIndex) {
       setFeedback("correct");
       const nid = normalizeId(piece.id);
 
-      // 1. Start snap animation
       setSnapping(nid);
 
-      // 2. Animation done → move to "landed" state
       setTimeout(() => {
         setSnapped((prev) => [...prev, nid]);
         setSnapping(null);
       }, 450);
 
-      // 3. Advance to next question
       setTimeout(() => {
-        setAssembled((prev) => [...prev, nid]);
+        setAssembled((prev) => {
+          const next = [...prev, nid];
+          if (next.length >= pieces.length) setDone(true);
+          return next;
+        });
         setFeedback(null);
         setSelected(null);
-        if (current + 1 >= pieces.length) setDone(true);
-        else setCurrent((c) => c + 1);
+        setActiveIndex(null);
       }, 950);
     } else {
       setFeedback("wrong");
@@ -121,15 +153,17 @@ export default function AssemblaIlRobot() {
       </button>
 
       <h1 className={styles.title}>Assembla il Robot</h1>
-      <p className={styles.subtitle}>Rispondi correttamente per guadagnare ogni pezzo!</p>
+      <p className={styles.subtitle}>
+        Scegli un pezzo nella barra sotto il robot: la domanda servirà solo per bloccare quel pezzo sul corpo.
+      </p>
 
-      {/* ── Robot stage ── */}
+      {/* ── Robot stage (solo pezzi già montati; gli altri stanno nella barra sopra le domande) ── */}
       <div className={styles.robotStage}>
-        {Object.entries(PIECE_META).map(([id, meta]) => (
+        {Object.entries(PIECE_UI).map(([id, meta]) => (
           <div
             key={id}
             className={`${styles.piece} ${styles["p_" + id]} ${getPieceClass(id)}`}
-            style={{ "--from": FROM_MAP[id] }}
+            style={{ "--from": meta.from }}
           >
             <Image
               src={meta.img}
@@ -143,34 +177,94 @@ export default function AssemblaIlRobot() {
 
       {/* ── Status messages ── */}
       {loading && <p className={styles.hint}>Il robot sta preparando le domande...</p>}
-      {error   && <p className={styles.error}>⚠️ {error}</p>}
+      {error && <p className={styles.error}>⚠️ {error}</p>}
+
+      {/* ── Barra pezzi (sopra le domande): qui finché non sono montati; poi si animano sul robot) ── */}
+      {!loading && !error && !done && pieces.length > 0 && (
+        <div className={styles.trayWrap}>
+          <p className={styles.trayTitle}>Pezzi da innestare</p>
+          <p className={styles.trayHint}>Tocca un pezzo per rispondere alla sua domanda e fissarlo al robot.</p>
+          <div className={styles.trayRow}>
+            {pieces.map((p, i) => {
+              const nid = normalizeId(p.id);
+              const meta = PIECE_UI[nid];
+              if (!meta || isPieceOnRobot(nid)) return null;
+              const isActive = activeIndex === i;
+              return (
+                <button
+                  key={p.id}
+                  type="button"
+                  className={`${styles.trayPiece} ${isActive ? styles.trayPieceSelected : ""}`}
+                  onClick={() => selectTrayPiece(i)}
+                  disabled={!!feedback}
+                  aria-pressed={isActive}
+                  aria-label={`Seleziona ${meta.label} per rispondere alla domanda`}
+                >
+                  <span className={styles.trayPieceThumb}>
+                    <Image src={meta.img} alt="" width={56} height={56} style={{ objectFit: "contain" }} />
+                  </span>
+                  <span className={styles.trayPieceLabel}>{meta.label}</span>
+                  {isActive && <span className={styles.trayPieceBadge}>✓ In risposta</span>}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* ── Question card ── */}
-      {!loading && !error && !done && piece && (
-        <div className={styles.qcard}>
-          <p className={styles.pieceLabel}>
-            Prossimo pezzo:{" "}
-            <strong>{PIECE_META[normalizeId(piece.id)]?.label ?? piece.id}</strong>
-          </p>
-          <p className={styles.question}>{piece.question}</p>
-          <div className={styles.opts}>
-            {piece.options.map((opt, i) => (
-              <button
-                key={i}
-                onClick={() => handleAnswer(i)}
-                disabled={!!feedback}
-                className={[
-                  styles.opt,
-                  selected === i && feedback === "correct" ? styles.optCorrect : "",
-                  selected === i && feedback === "wrong"   ? styles.optWrong   : "",
-                ].join(" ")}
-              >
-                {opt}
-              </button>
-            ))}
-          </div>
-          {pieces.length > 0 && (
-            <p className={styles.progress}>{current + 1} / {pieces.length}</p>
+      {!loading && !error && !done && pieces.length > 0 && (
+        <div className={`${styles.qcard} ${activeIndex !== null && piece ? styles.qcardFocused : ""}`}>
+          {activeIndex === null || !piece ? (
+            <>
+              <p className={styles.qcardPrompt}>
+                <span className={styles.qcardPromptIcon} aria-hidden>
+                  👆
+                </span>{" "}
+                Scegli un pezzo dalla barra sopra: la domanda riguarderà solo quel componente.
+              </p>
+              <p className={styles.progress}>
+                {assembled.length} / {pieces.length} pezzi montati
+              </p>
+            </>
+          ) : (
+            <>
+              <div className={styles.targetBanner}>
+                {activeTargetMeta && (
+                  <span className={styles.targetThumb} aria-hidden>
+                    <Image src={activeTargetMeta.img} alt="" width={48} height={48} style={{ objectFit: "contain" }} />
+                  </span>
+                )}
+                <div className={styles.targetText}>
+                  <span className={styles.targetEyebrow}>Pezzo selezionato</span>
+                  <strong className={styles.targetName}>{activeTargetMeta?.label ?? piece.id}</strong>
+                  <span className={styles.targetSub}>La risposta giusta lo fissa sul robot.</span>
+                </div>
+              </div>
+              <p className={styles.question}>{piece.question}</p>
+              <div className={styles.opts}>
+                {piece.options.map((opt, i) => (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={() => handleAnswer(i)}
+                    disabled={!!feedback}
+                    className={[
+                      styles.opt,
+                      selected === i && feedback === "correct" ? styles.optCorrect : "",
+                      selected === i && feedback === "wrong" ? styles.optWrong : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" ")}
+                  >
+                    {opt}
+                  </button>
+                ))}
+              </div>
+              <p className={styles.progress}>
+                {assembled.length} / {pieces.length} pezzi montati
+              </p>
+            </>
           )}
         </div>
       )}
