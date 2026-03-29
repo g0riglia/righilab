@@ -120,8 +120,10 @@
 }
 
 .robot {
-  width: min(30vw, 400px);
+  width: min(38vw, 540px);
   height: auto;
+  object-fit: contain;
+  object-position: center;
   position: relative;
   z-index: 4;
 }
@@ -438,7 +440,7 @@
   }
 
   .robot {
-    width: min(56vw, 320px);
+    width: min(66vw, 430px);
   }
 
   .aboutUsContainer {

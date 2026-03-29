@@ -179,6 +179,50 @@
   align-items: center;
 }
 
+.actionButtons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.9rem;
+}
+
+.videoPreviewCard,
+.videoCard {
+  width: min(420px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  padding: 0.9rem;
+  border-radius: 14px;
+  background: rgb(83 191 198 / 65%);
+  border: 1px solid rgb(220 255 255 / 28%);
+  box-shadow:
+    0 10px 24px rgb(9 40 57 / 15%),
+    0 0 0 1px rgb(220 255 255 / 10%) inset;
+}
+
+.videoPreviewLabel {
+  margin: 0;
+  text-align: left;
+  font-size: 0.85rem;
+  color: rgb(232 255 255 / 92%);
+}
+
+.videoPreviewFrame {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 0;
+  border-radius: 10px;
+  display: block;
+}
+
+.videoMetaRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
 .themedInput::placeholder {
   color: rgb(230 255 255 / 85%);
 }
@@ -395,6 +439,8 @@
 .generatingImage {
   width: min(520px, 92vw);
   height: auto;
+  object-fit: contain;
+  object-position: center;
   display: block;
   margin-inline: auto;
 }

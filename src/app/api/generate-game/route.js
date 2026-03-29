@@ -28,8 +28,19 @@ export async function POST(request) {
     return NextResponse.json(gameData);
   } catch (err) {
     console.error("[generate-game]", err);
+    let message = err?.message || "Errore generazione gioco";
+    if (err?.cause?.message) message = err.cause.message;
+    if (message.includes("GEMINI_API_KEY non definita")) {
+      message = "Configurazione AI mancante. Crea .env.local, aggiungi GEMINI_API_KEY e riavvia il server.";
+    }
+    if (message.includes("401") || message.includes("API key") || message.includes("invalid")) {
+      message = "Chiave API non valida. Verifica GEMINI_API_KEY in .env.local";
+    }
+    if (message.includes("404") || message.includes("NOT_FOUND")) {
+      message = "Modello AI non disponibile. Controlla la configurazione.";
+    }
     return NextResponse.json(
-      { error: err.message || "Errore generazione gioco" },
+      { error: message },
       { status: 500 }
     );
   }

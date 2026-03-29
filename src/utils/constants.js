@@ -33,6 +33,10 @@ export const STUDENTS = [
         role: "Back-end Developer",
     },
     {
+        name: "Eshaal Abid",
+        role: "Back-end Developer",
+    },
+    {
         name: "Marco Ivasyuk",
         role: "Animations",
     },

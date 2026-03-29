@@ -334,7 +334,14 @@ export default function AdventureGame() {
       {/* 1. LOADING (Appare subito) */}
       {phase === "loading" && (
         <section className={styles.loadingSection}>
-          <Image src="/Robot%20Mascotte%20Assets/4_VID_Caricamento_final.gif" width={250} height={250} alt="Loading" unoptimized />
+          <Image
+            src="/Robot%20Mascotte%20Assets/4_VID_Caricamento_final.gif"
+            width={250}
+            height={250}
+            alt="Loading"
+            unoptimized
+            className={styles.mascotGif}
+          />
           <p>Preparazione Avventura...</p>
         </section>
       )}
@@ -344,7 +351,7 @@ export default function AdventureGame() {
         <section className={styles.section}>
           <h2>Ops! Qualcosa è andato storto</h2>
           <p>{error}</p>
-          <Button onClick={loadGame}>Riprova</Button>
+          <Button href="/giochi">Riprova</Button>
         </section>
       )}
 

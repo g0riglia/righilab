@@ -29,6 +29,7 @@ export default function BatteryGame() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [batteryLevel, setBatteryLevel] = useState(0);
   const [showModal, setShowModal] = useState(false);
+  const [readyToFinish, setReadyToFinish] = useState(false);
   const [error, setError] = useState(null);
 
   const loadGame = useCallback(async (diffId) => {
@@ -57,6 +58,7 @@ export default function BatteryGame() {
       setPhase("playing");
       setCurrentIndex(0);
       setBatteryLevel(0);
+      setReadyToFinish(false);
       setShowModal(true);
     } catch (err) {
       setError(err.message);
@@ -77,7 +79,7 @@ export default function BatteryGame() {
 
     if (newBattery >= REQUIRED_LEVEL) {
       setShowModal(false);
-      setPhase("win");
+      setReadyToFinish(true);
       return;
     }
     if (isLastQuestion) {
@@ -126,7 +128,7 @@ export default function BatteryGame() {
             width={280}
             height={280}
             unoptimized
-            className={styles.loadingRobot}
+            className={styles.mascotGif}
           />
           <p>Preparo le domande...</p>
         </section>
@@ -163,6 +165,19 @@ export default function BatteryGame() {
                   </motion.div>
                 </AnimatePresence>
               )}
+
+              {readyToFinish && (
+                <div className={styles.finishCard}>
+                  <p className={styles.progress}>Batteria completata!</p>
+                  <h3>Robot carico al 100%</h3>
+                  <p>Hai riempito tutta la batteria. Complimenti!.</p>
+                  <div className={styles.resultActions}>
+                    <Button type="button" variant="solid" onClick={() => setPhase("win")}>
+                      Continua
+                    </Button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </section>
@@ -176,11 +191,12 @@ export default function BatteryGame() {
             width={200}
             height={200}
             unoptimized
+            className={styles.mascotGif}
           />
           <h2>Complimenti! Robot carico!</h2>
           <p>Hai risposto correttamente a tutte le domande necessarie.</p>
           <div className={styles.resultActions}>
-            <Button href="/giochi/carica-il-robot" variant="solid">Riprova</Button>
+            <Button href="/giochi" variant="solid">Riprova</Button>
             <Button href="/giochi" variant="outline">Torna ai giochi</Button>
           </div>
         </section>
@@ -194,11 +210,12 @@ export default function BatteryGame() {
             width={200}
             height={200}
             unoptimized
+            className={styles.mascotGif}
           />
           <h2>Batteria scarica!</h2>
           <p>Le domande sono finite prima di caricare completamente il robot. Riprova!</p>
           <div className={styles.resultActions}>
-            <Button href="/giochi/carica-il-robot" variant="solid">Riprova</Button>
+            <Button href="/giochi" variant="solid">Riprova</Button>
             <Button href="/giochi" variant="outline">Torna ai giochi</Button>
           </div>
         </section>

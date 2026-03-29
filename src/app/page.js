@@ -29,6 +29,7 @@ export default function Home() {
           alt="Il robot mascotte del sito che saluta"
           width={600}
           height={600}
+          unoptimized
         />
       </section>
       <div className={styles.contentGradient}>

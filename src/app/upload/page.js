@@ -12,6 +12,31 @@ const MAX_FILES = 3;
 const MAX_VIDEOS = 1;
 const MAX_TOPICS = 3;
 
+function extractYouTubeVideoId(value) {
+  try {
+    const parsedUrl = new URL(value);
+    const host = parsedUrl.hostname.replace(/^www\./i, "").toLowerCase();
+
+    if (host === "youtu.be") {
+      return parsedUrl.pathname.split("/").filter(Boolean)[0] || null;
+    }
+
+    if (host === "youtube.com" || host === "m.youtube.com" || host === "music.youtube.com") {
+      if (parsedUrl.pathname === "/watch") {
+        return parsedUrl.searchParams.get("v");
+      }
+
+      if (parsedUrl.pathname.startsWith("/shorts/") || parsedUrl.pathname.startsWith("/embed/")) {
+        return parsedUrl.pathname.split("/").filter(Boolean)[1] || null;
+      }
+    }
+  } catch {
+    return null;
+  }
+
+  return null;
+}
+
 export default function Upload() {
   const router = useRouter();
   const { setLesson } = useLesson();
@@ -154,16 +179,14 @@ export default function Upload() {
 
   const handleAddVideo = () => {
     const normalizedValue = inputValue.trim();
+    const videoId = extractYouTubeVideoId(normalizedValue);
 
     if (!normalizedValue) {
       setUploadError("Inserisci un link YouTube valido prima di aggiungerlo.");
       return;
     }
 
-    const isValidUrl = /^https?:\/\//i.test(normalizedValue);
-    const isYoutubeUrl = /(?:youtube\.com|youtu\.be)/i.test(normalizedValue);
-
-    if (!isValidUrl || !isYoutubeUrl) {
+    if (!videoId) {
       setUploadError("Inserisci un link YouTube valido prima di aggiungerlo.");
       return;
     }
@@ -288,6 +311,7 @@ export default function Upload() {
   }
 
   const selectedMethodTitle = METHODS.find((method) => method.id === selectedMethod)?.title;
+  const pendingVideoId = extractYouTubeVideoId(inputValue.trim());
 
   return (
     <main className={styles.main}>
@@ -442,21 +466,46 @@ export default function Upload() {
                         Aggiungi video
                       </Button>
                     </div>
+                    {pendingVideoId && uploadedVideos.length === 0 ? (
+                      <div className={styles.videoPreviewCard}>
+                        <p className={styles.videoPreviewLabel}>Anteprima video</p>
+                        <iframe
+                          className={styles.videoPreviewFrame}
+                          src={`https://www.youtube.com/embed/${pendingVideoId}`}
+                          title="Anteprima YouTube"
+                          loading="lazy"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                          referrerPolicy="strict-origin-when-cross-origin"
+                          allowFullScreen
+                        />
+                      </div>
+                    ) : null}
                     {uploadError ? <p className={styles.uploadError}>{uploadError}</p> : null}
                     {uploadedVideos.length > 0 ? (
                       <div className={styles.uploadedFiles}>
                         <span className={styles.countBadge}>{uploadedVideos.length}/{MAX_VIDEOS} video</span>
                         {uploadedVideos.map((video) => (
-                          <div key={video} className={styles.fileCard}>
-                            <span className={styles.fileName}>{video}</span>
-                            <button
-                              type="button"
-                              className={styles.removeFileButton}
-                              onClick={() => handleRemoveVideo(video)}
-                              aria-label={`Rimuovi ${video}`}
-                            >
-                              ×
-                            </button>
+                          <div key={video} className={styles.videoCard}>
+                            <iframe
+                              className={styles.videoPreviewFrame}
+                              src={`https://www.youtube.com/embed/${extractYouTubeVideoId(video)}`}
+                              title={`Anteprima ${video}`}
+                              loading="lazy"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                              referrerPolicy="strict-origin-when-cross-origin"
+                              allowFullScreen
+                            />
+                            <div className={styles.videoMetaRow}>
+                              <span className={styles.fileName}>{video}</span>
+                              <button
+                                type="button"
+                                className={styles.removeFileButton}
+                                onClick={() => handleRemoveVideo(video)}
+                                aria-label={`Rimuovi ${video}`}
+                              >
+                                ×
+                              </button>
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -554,12 +603,14 @@ export default function Upload() {
                     Contenuto caricato: <strong>{submittedValue}</strong>
                   </p>
                 )}
-                <Button type="button" variant="solid" onClick={handleStartGeneration}>
-                  Genera
-                </Button>
-                <Button type="button" variant="outline" onClick={handleBack}>
-                  Indietro
-                </Button>
+                <div className={styles.actionButtons}>
+                  <Button type="button" variant="solid" onClick={handleStartGeneration}>
+                    Genera
+                  </Button>
+                  <Button type="button" variant="outline" onClick={handleBack}>
+                    Indietro
+                  </Button>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
