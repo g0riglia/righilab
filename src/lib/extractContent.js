@@ -77,8 +77,22 @@ const MAX_CHARS_PER_VIDEO = 80000;
  * @param {string[]} urls - URL o ID dei video (es. https://youtube.com/watch?v=xxx)
  * @returns {Promise<string>} Trascrizioni concatenate con timestamp
  */
+/** Marker letto da generate-lesson per messaggi specifici (blocco IP cloud vs assenza sottotitoli). */
+export const TRANSCRIPT_ERROR = {
+  IP_BLOCKED: "TRANSCRIPT_ERROR:IP_BLOCKED",
+  NO_CAPTIONS: "TRANSCRIPT_ERROR:NO_CAPTIONS",
+  VIDEO_UNAVAILABLE: "TRANSCRIPT_ERROR:VIDEO_UNAVAILABLE",
+};
+
 export async function extractTranscriptFromVideos(urls) {
-  const { fetchTranscript } = await import("youtube-transcript");
+  const {
+    fetchTranscript,
+    YoutubeTranscriptTooManyRequestError,
+    YoutubeTranscriptDisabledError,
+    YoutubeTranscriptNotAvailableError,
+    YoutubeTranscriptNotAvailableLanguageError,
+    YoutubeTranscriptVideoUnavailableError,
+  } = await import("youtube-transcript");
   const parts = [];
 
   for (const url of urls) {
@@ -106,7 +120,30 @@ export async function extractTranscriptFromVideos(urls) {
       }
       parts.push(`--- Video: ${trimmed} ---\n${text}`);
     } catch (err) {
-      console.warn(`[extractContent] Errore trascrizione ${trimmed}:`, err.message);
+      console.warn(`[extractContent] Errore trascrizione ${trimmed}:`, err?.message || err);
+      let marker = null;
+      if (err instanceof YoutubeTranscriptTooManyRequestError) {
+        marker = TRANSCRIPT_ERROR.IP_BLOCKED;
+      } else if (
+        err instanceof YoutubeTranscriptDisabledError ||
+        err instanceof YoutubeTranscriptNotAvailableError ||
+        err instanceof YoutubeTranscriptNotAvailableLanguageError
+      ) {
+        marker = TRANSCRIPT_ERROR.NO_CAPTIONS;
+      } else if (err instanceof YoutubeTranscriptVideoUnavailableError) {
+        marker = TRANSCRIPT_ERROR.VIDEO_UNAVAILABLE;
+      } else {
+        const m = String(err?.message || "");
+        if (/captcha|too many requests/i.test(m)) marker = TRANSCRIPT_ERROR.IP_BLOCKED;
+        else if (/disabled|No transcripts are available/i.test(m)) marker = TRANSCRIPT_ERROR.NO_CAPTIONS;
+        else if (/no longer available|Impossible to retrieve Youtube video ID/i.test(m)) {
+          marker = TRANSCRIPT_ERROR.VIDEO_UNAVAILABLE;
+        }
+      }
+      if (marker) {
+        parts.push(`--- ${trimmed} ---\n[${marker}]`);
+        continue;
+      }
       const msg = err?.message?.includes("disabled") || err?.message?.includes("unavailable")
         ? "Trascrizioni disabilitate o video non disponibile"
         : "Impossibile recuperare la trascrizione";

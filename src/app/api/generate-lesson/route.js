@@ -3,7 +3,11 @@ import {
   generateLesson,
   buildContentForAI,
 } from "@/lib/gemini";
-import { extractTextFromFiles, extractTranscriptFromVideos } from "@/lib/extractContent";
+import {
+  extractTextFromFiles,
+  extractTranscriptFromVideos,
+  TRANSCRIPT_ERROR,
+} from "@/lib/extractContent";
 
 /**
  * POST /api/generate-lesson
@@ -67,12 +71,29 @@ export async function POST(request) {
     }
 
     if (method === "video" && items.length > 0) {
-      const hasValidTranscript = /\[\d+:\d{2}\]\s+.{2,}/.test(rawContent);
-      if (!hasValidTranscript) {
+      if (rawContent.includes(TRANSCRIPT_ERROR.IP_BLOCKED)) {
         return NextResponse.json(
           {
             error:
-              "Impossibile ottenere la trascrizione dei video. Verifica che abbiano i sottotitoli attivati e siano pubblici.",
+              "YouTube spesso blocca le trascrizioni se la richiesta parte da un server in cloud (es. Vercel), mentre in locale passa dalla tua rete. Soluzioni: proxy residenziale, microservizio su VPS, o API di terze parti per i sottotitoli. I video possono avere i sottotitoli e comunque fallire solo in produzione.",
+          },
+          { status: 503 }
+        );
+      }
+      const hasValidTranscript = /\[\d+:\d{2}\]\s+.{2,}/.test(rawContent);
+      if (!hasValidTranscript) {
+        const noVideo = rawContent.includes(TRANSCRIPT_ERROR.VIDEO_UNAVAILABLE);
+        const noCap =
+          rawContent.includes(TRANSCRIPT_ERROR.NO_CAPTIONS) ||
+          rawContent.includes("Trascrizioni non disponibili") ||
+          rawContent.includes("Trascrizioni disabilitate");
+        return NextResponse.json(
+          {
+            error: noVideo
+              ? "Uno o più video non sono disponibili o l'URL non è valido."
+              : noCap
+                ? "Impossibile ottenere la trascrizione: verifica che i video abbiano sottotitoli (manuali o automatici) e siano pubblici."
+                : "Impossibile ottenere la trascrizione dei video. Verifica che abbiano i sottotitoli attivati e siano pubblici.",
           },
           { status: 400 }
         );
