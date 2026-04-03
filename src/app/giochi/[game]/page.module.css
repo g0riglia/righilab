@@ -2,9 +2,9 @@
   min-height: 100vh;
   padding: 8rem 2rem 4rem;
   background:
-    radial-gradient(circle at top left, rgb(175 245 235 / 55%), transparent 30%),
-    radial-gradient(circle at top right, rgb(105 207 225 / 35%), transparent 28%),
-    linear-gradient(180deg, #75d9de 0%, #6fd4db 18%, #46b6c3 50%, #1b6f81 100%);
+    radial-gradient(circle at top left, rgb(100 210 218 / 42%), transparent 30%),
+    radial-gradient(circle at top right, rgb(55 165 188 / 30%), transparent 28%),
+    linear-gradient(180deg, #58b4c0 0%, #52aab8 18%, #3d9ba8 50%, #1b6f81 100%);
   color: white;
 }
 

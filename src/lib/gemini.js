@@ -2,6 +2,7 @@ import { GoogleGenAI } from "@google/genai";
 
 const MODEL = "gemini-2.5-flash";
 const MAX_OUTPUT_TOKENS = 4096;
+/** Lezioni (video/argomento) possono essere molto lunghe: 4096 token spesso tronca il JSON a metà stringa. */
 const MAX_LESSON_TOKENS = 8192;
 
 const SAFETY_SETTINGS = [
@@ -437,13 +438,16 @@ Requisiti per ARGOMENTO (campo bodyMdx):
 
 Rispondi SOLO con JSON valido (schema: ${schemaHint}). Nessun testo prima o dopo.`;
 
+  const maxLessonOut =
+    inputType === "appunti" ? MAX_OUTPUT_TOKENS : MAX_LESSON_TOKENS;
+
   const response = await ai.models.generateContent({
     model: MODEL,
     contents: prompt,
     config: {
       responseMimeType: "application/json",
       responseJsonSchema: schema,
-      maxOutputTokens: inputType === "argomento" ? MAX_LESSON_TOKENS : MAX_OUTPUT_TOKENS,
+      maxOutputTokens: maxLessonOut,
       temperature: inputType === "argomento" ? 0.5 : 0.7,
       safetySettings: SAFETY_SETTINGS,
     },

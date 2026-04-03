@@ -22,7 +22,14 @@ export default function TopicLessonMdx({ bodyMdx }) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ source: bodyMdx }),
         });
-        const data = await res.json();
+        const raw = await res.text();
+        let data;
+        try {
+          data = raw.trim() ? JSON.parse(raw) : null;
+        } catch {
+          throw new Error("Risposta dal server non valida (JSON)");
+        }
+        if (!data) throw new Error("Risposta vuota dal server");
         if (!res.ok) throw new Error(data.error || "Rendering non riuscito");
         if (!data.compiledSource) throw new Error("Risposta MDX non valida");
         if (!cancelled) setSerialized(data);

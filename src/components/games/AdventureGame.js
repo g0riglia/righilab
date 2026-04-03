@@ -215,10 +215,10 @@ export default function AdventureGame() {
             difficulty: "medio",
             lesson: lesson
               ? {
-                  title: lesson.title,
-                  sections: lesson.sections ?? [],
-                  bodyMdx: typeof lesson.bodyMdx === "string" ? lesson.bodyMdx : "",
-                }
+                title: lesson.title,
+                sections: lesson.sections ?? [],
+                bodyMdx: typeof lesson.bodyMdx === "string" ? lesson.bodyMdx : "",
+              }
               : { title: "Lezione", sections: [], bodyMdx: "" },
           }),
         });
@@ -415,14 +415,14 @@ export default function AdventureGame() {
             )}
           </AnimatePresence>
 
-           <div className={styles.gridContainer}>
+          <div className={styles.gridContainer}>
 
             {[...Array(30)].map((_, index) => {
               const rowIndex = Math.floor(index / 5);
               const isReversed = rowIndex % 2 !== 0;
               const visualNumber = isReversed ? (rowIndex * 5 + 4) - (index % 5) : index;
               const isGreen = visualNumber <= steps;
-              const isBurned=visualNumber <= flameStep
+              const isBurned = visualNumber <= flameStep
               const isBonus = bonusCells.includes(visualNumber);
               const isPlayerHere = visualNumber === steps;
               const isFlameHere = flameStep !== null && visualNumber === flameStep;
@@ -430,25 +430,25 @@ export default function AdventureGame() {
               return (
                 <div key={index} className={`${styles.cell}
                 ${visualNumber === 0 || visualNumber === 29 ? styles.startEnd : ""}
-                ${isGreen && !isBurned && (visualNumber !== 0 && visualNumber !== 29)  ? styles.completed : ""}
-                ${isBurned  && (visualNumber !== 0 && visualNumber !== 29) ? styles.burned : ""}
+                ${isGreen && !isBurned && (visualNumber !== 0 && visualNumber !== 29) ? styles.completed : ""}
+                ${isBurned && (visualNumber !== 0 && visualNumber !== 29) ? styles.burned : ""}
                 ${isBonus ? styles.bonusCell : ""}`}>
-                  {visualNumber===0 && !isPlayerHere && !isFlameHere && <span className={styles.stepNumber}>Inizio</span>}
-                  {visualNumber===29 && !isPlayerHere && !isFlameHere && <span className={styles.stepNumber}>Fine</span>}
-                  {!isPlayerHere && !isFlameHere && visualNumber!=0 && visualNumber!=29 && !isBonus && <span className={styles.stepNumber}>{visualNumber + 1}</span>}
+                  {visualNumber === 0 && !isPlayerHere && !isFlameHere && <span className={styles.stepNumber}>Inizio</span>}
+                  {visualNumber === 29 && !isPlayerHere && !isFlameHere && <span className={styles.stepNumber}>Fine</span>}
+                  {!isPlayerHere && !isFlameHere && visualNumber != 0 && visualNumber != 29 && !isBonus && <span className={styles.stepNumber}>{visualNumber + 1}</span>}
                   {isPlayerHere && <motion.div layoutId="p" className={styles.playerPawn}><Image src="/Robot%20Mascotte%20Game%20Assets/GIOCO_AVVENTURA_Robot_PEDINA.png" width={70} height={70} alt="R" /></motion.div>}
                   {isFlameHere && <motion.div layoutId="f" className={styles.flamePawn}>🔥</motion.div>}
                   {isBonus && !isPlayerHere && !isFlameHere && <span className={styles.bonusIcon}>🎲</span>}
                 </div>
               );
             })}
-          </div> 
+          </div>
 
           {/* PULSANTE PER APRIRE IL MODAL */}
           <div className={styles.actionArea}>
             {!isRolling && questions[currentIndex] && !isModalOpen && (
-              <button 
-                className={styles.openQuestionBtn} 
+              <button
+                className={styles.openQuestionBtn}
                 onClick={openQuestionModal}
               >
                 Rispondi alla Domanda #{currentIndex + 1}
@@ -459,27 +459,27 @@ export default function AdventureGame() {
           {/* MODAL DELLA DOMANDA */}
           <AnimatePresence>
             {isModalOpen && (
-              <motion.div 
+              <motion.div
                 className={styles.modalOverlay}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
               >
-                <motion.div 
+                <motion.div
                   className={styles.modalContent}
                   initial={{ scale: 0.8, y: 20 }}
                   animate={{ scale: 1, y: 0 }}
                   exit={{ scale: 0.8, y: 20 }}
                 >
                   <button className={styles.closeBtn} onClick={closeQuestionModal}>×</button>
-                  
+
                   <p className={styles.progress}>
                     Domanda #{currentIndex + 1}
                   </p>
-                  
-                  <QuestionRenderer 
-                    question={modalQuestion ?? questions[currentIndex]} 
-                    onAnswer={handleAnswerWithClose} 
+
+                  <QuestionRenderer
+                    question={modalQuestion ?? questions[currentIndex]}
+                    onAnswer={handleAnswerWithClose}
                   />
                 </motion.div>
               </motion.div>
