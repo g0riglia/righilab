@@ -6,8 +6,9 @@ import rehypePrettyCode from "rehype-pretty-code";
 export const runtime = "nodejs";
 
 /**
- * Serializza MDX per il client (<MDXRemote />).
- * Bright + renderToStaticMarkup non è compatibile (suspense / RSC in fase di render).
+ * Serializza per il client (<MDXRemote />).
+ * format: 'md' = parsing come Markdown, non MDX completo: le graffe `{` `}` nel testo
+ * (es. insiemi, tuple scritte dall’AI) non vengono interpretate come JSX e non mandano in errore il compile.
  * rehype-pretty-code (Shiki) evidenzia i blocchi codice in fase di compile.
  */
 export async function POST(request) {
@@ -20,6 +21,7 @@ export async function POST(request) {
 
     const mdxSerialized = await serialize(source, {
       mdxOptions: {
+        format: "md",
         remarkPlugins: [remarkGfm],
         rehypePlugins: [
           [

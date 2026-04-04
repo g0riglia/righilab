@@ -100,7 +100,7 @@ const LESSON_JSON_SCHEMA_TOPIC = {
     bodyMdx: {
       type: "string",
       description:
-        "Articolo MDX unico della lezione: heading ## ###, grassetto, liste, blockquote >, link [testo](url), e blocchi codice con fence e linguaggio (es. ```js ... ```). Nessun import JSX custom; solo Markdown/MDX standard.",
+        "Solo italiano. Corpo MDX: NO titolo con # (usa solo ## e ###). Dopo ogni ## o ### lascia una riga vuota. Paragrafi separati da riga vuota (2-4 frasi ciascuno). Sintassi: **grassetto**, liste - o 1., > blockquote, [testo](https://...), code fence con linguaggio obbligatorio. Vietati import/componenti JSX, HTML raw, e angoli <...> fuori dai code fence (usa backtick per simboli tecnici).",
     },
     miniGames: LESSON_MINIGAMES_SCHEMA,
   },
@@ -206,7 +206,8 @@ export function buildContentForAI({ method, items, rawContent }) {
     return rawContent;
   }
   if (method === "topic") {
-    return `Argomenti da studiare: ${items.join(", ")}`;
+    const lines = items.map((t, i) => `${i + 1}. ${String(t).trim()}`).join("\n");
+    return `Argomenti richiesti dall'utente (spiega tutti, nell'ordine che preferisci, senza sostituirli con altri temi):\n${lines}`;
   }
   if (method === "video") {
     return `Video YouTube da analizzare (link forniti, contenuto da trascrizione): ${items.join(", ")}. Genera la lezione basandoti sulla descrizione degli argomenti trattati tipicamente in questi video.`;
@@ -346,6 +347,36 @@ function parseJsonFromResponse(text) {
   return null;
 }
 
+/**
+ * Corregge bodyMdx tipico da modello: newline, H1 ridondante o errato, testo tutto su una riga con \n letterali.
+ * @param {string} body
+ * @param {string} [lessonTitle] - se l'H1 coincide col titolo pagina, viene rimosso
+ * @returns {string}
+ */
+function normalizeTopicBodyMdx(body, lessonTitle) {
+  let s = typeof body === "string" ? body : "";
+  s = s.replace(/\r\n/g, "\n").trim();
+  if (!s) return "";
+  if (!/\n/.test(s) && /\\n/.test(s)) {
+    s = s.replace(/\\n/g, "\n");
+  }
+  const lines = s.split("\n");
+  const first = lines[0] ?? "";
+  if (/^#\s/.test(first) && !/^##\s/.test(first)) {
+    const inner = first.replace(/^#\s+/, "").replace(/\*+/g, "").trim();
+    const lt = (lessonTitle || "").replace(/\*+/g, "").trim();
+    if (lt && inner === lt) {
+      lines.shift();
+      while (lines.length > 0 && lines[0].trim() === "") lines.shift();
+      s = lines.join("\n");
+    } else {
+      lines[0] = `## ${first.replace(/^#\s+/, "").trim()}`;
+      s = lines.join("\n");
+    }
+  }
+  return s.replace(/\n{3,}/g, "\n\n").trim();
+}
+
 function checkSafetyBlock(response, context) {
   const feedback = response?.promptFeedback;
   if (feedback?.blockReason) {
@@ -374,7 +405,6 @@ export async function generateLesson(extractedContent, source, inputType) {
 
   const ai = getClient();
   const label = METHOD_LABELS[source.method] || "Contenuto";
-  const primaryTopic = items[0] || "contenuto";
   const content = extractedContent.slice(0, 80000);
 
   const prompts = {
@@ -409,23 +439,32 @@ Requisiti per VIDEO:
 - id: "lesson-video"
 - Stile: narrativo, chiaro, nessun dettaglio perso`,
 
-    argomento: `Sei un assistente didattico. L'utente ha scelto ARGOMENTI senza avere appunti: vuole STUDIARE da zero una lezione completa e dettagliata, presentata come articolo ricco (MDX).
+    argomento: `Sei un tutor per studenti delle superiori. Lingua: SOLO italiano corretto.
 
-ARGOMENTI DA SPIEGARE:
+COSA DEVE CAPIRE IL MODELLO
+- Sotto trovi l'ELENCO ESATTO di ciò che l'utente vuole studiare. La lezione deve coprire QUELLI argomenti, tutti, con profondità adeguata.
+- NON sostituire con un tema generico simile (es. se chiedono "equazioni di secondo grado", non scrivere solo "algebra" in vago).
+- Se ci sono più voci, organizza il testo in sezioni ## (una macro-area per tema o gruppo logico) così che ogni voce dell'elenco sia trattata in modo esplicito (anche con ### per i passaggi).
+- Se un termine è ambiguo, scegli il significato più didattico usuale in contesto scolastico italiano e resta coerente per tutto l'articolo.
+
+ELENCO RICHIESTE (fonte di verità):
 ${content}
 
-Requisiti per ARGOMENTO (campo bodyMdx):
-- Scrivi UN SOLO articolo in MDX nel campo bodyMdx: lezione completa, chiara, con ritmo vivace (titoli, enfasi, esempi, domande retoriche dove serve).
-- Struttura suggerita: usa ## per le grandi parti e ### per sotto-parti; elenchi puntati o numerati; **grassetto** per concetti chiave; > citazione/blockquote per "tip", "attenzione" o box didattici.
-- Dove ha senso, includi snippet di codice con fence e linguaggio, es: \`\`\`js ... \`\`\` o \`\`\`python ... \`\`\` (il frontend evidenzierà la sintassi).
-- Nessun import o componente JSX custom nel MDX: solo sintassi Markdown/MDX standard (heading, link, liste, code fence, enfasi).
-- NON usare raw HTML pericoloso; per i link usa solo [testo](https://...).
-- Obiettivi (objectives): 3-5 punti chiaro in italiano.
-- 3 mini-giochi (miniGames: title, description, objective brevi).
-- source.method="topic", source.label="${label}", source.items = ${JSON.stringify(items)}
-- id: "lesson-topic"
-- description: una riga che invita a leggere l'articolo.
-- Nel JSON escapa i caratteri nelle stringhe (bodyMdx può contenere \\n per a capo).`,
+CAMPO bodyMdx (Markdown/MDX, un solo campo stringa)
+- È il corpo dell'articolo: NON ripetere il titolo della lezione come riga "# ..." (in pagina c’è già l’h1). Inizia con un breve paragrafo introduttivo (1-3 frasi), poi usa SOLO ## e ### per la struttura.
+- Dopo ogni ## o ### inserisci una riga vuota, poi il testo. Tra un paragrafo e l’altro lascia una riga vuota (Markdown vero, non il testo "\\n" stampato).
+- Paragrafi: 2-4 frasi; tono chiaro, esempi concreti dove servono; evita frasi riempitive tipo "in questo articolo vedremo".
+- **Grassetto** sui concetti nuovi; elenchi con - o 1.; > blockquote per attenzioni o suggerimenti.
+- Codice o formule: solo dentro fence con linguaggio, es. \`\`\`text\`\`\` o \`\`\`python\`\`\` (chiudi sempre i fence).
+- Link solo come [testo](https://...). Vietati tag HTML raw, import JSX, componenti MDX custom. Evita caratteri < e > nel testo libero (usali dentro fence o con backtick).
+
+METADATI JSON
+- title: titolo accattivante ma fedele all’elenco richiesto.
+- description: una riga in italiano.
+- objectives: 3-5 punti misurabili, allineati agli argomenti dell’elenco.
+- miniGames: esattamente 3 voci (title, description, objective) collegate al contenuto che hai scritto.
+- source: method "topic", label "${label}", items uguale a questo array JSON: ${JSON.stringify(items)}
+- id: "lesson-topic"`,
   };
 
   const schema = inputType === "argomento" ? LESSON_JSON_SCHEMA_TOPIC : LESSON_JSON_SCHEMA;
@@ -448,7 +487,7 @@ Rispondi SOLO con JSON valido (schema: ${schemaHint}). Nessun testo prima o dopo
       responseMimeType: "application/json",
       responseJsonSchema: schema,
       maxOutputTokens: maxLessonOut,
-      temperature: inputType === "argomento" ? 0.5 : 0.7,
+      temperature: inputType === "argomento" ? 0.45 : 0.7,
       safetySettings: SAFETY_SETTINGS,
     },
   });
@@ -464,6 +503,7 @@ Rispondi SOLO con JSON valido (schema: ${schemaHint}). Nessun testo prima o dopo
     if (inputType === "argomento") {
       parsed.sections = [];
       if (typeof parsed.bodyMdx !== "string") parsed.bodyMdx = "";
+      else parsed.bodyMdx = normalizeTopicBodyMdx(parsed.bodyMdx, parsed.title);
     }
     return parsed;
   }

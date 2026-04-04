@@ -34,6 +34,10 @@
   text-shadow: 0 2px 14px rgb(10 50 60 / 35%);
 }
 
+.topicMdx :global(h2:first-child) {
+  margin-top: 0.35rem;
+}
+
 .topicMdx :global(h3) {
   margin: 1.35rem 0 0.45rem;
   font-size: 1.15rem;
@@ -43,6 +47,37 @@
 
 .topicMdx :global(p) {
   margin: 0.65rem 0;
+}
+
+.topicMdx :global(p + p) {
+  margin-top: 0.85rem;
+}
+
+.topicMdx :global(h2 + p),
+.topicMdx :global(h3 + p) {
+  margin-top: 0.5rem;
+}
+
+.topicMdx :global(code) {
+  padding: 0.12em 0.38em;
+  border-radius: 6px;
+  font-size: 0.9em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  background: rgb(0 35 48 / 55%);
+  border: 1px solid rgb(255 255 255 / 12%);
+}
+
+.topicMdx :global(hr) {
+  margin: 1.5rem 0;
+  border: none;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgb(255 255 255 / 22%) 15%,
+    rgb(255 255 255 / 22%) 85%,
+    transparent
+  );
 }
 
 .topicMdx :global(ul),
@@ -98,6 +133,9 @@
 }
 
 .topicMdx :global(pre code) {
+  padding: 0;
+  border: none;
+  background: transparent;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   font-size: 0.88rem;
   line-height: 1.55;
