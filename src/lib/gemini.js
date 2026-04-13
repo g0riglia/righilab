@@ -1,6 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 
-const MODEL = "gemini-2.5-flash";
+const MODEL = "gemini-2.5-flash-lite";
 const MAX_OUTPUT_TOKENS = 4096;
 /** Lezioni (video/argomento) possono essere molto lunghe: 4096 token spesso tronca il JSON a metà stringa. */
 const MAX_LESSON_TOKENS = 8192;
