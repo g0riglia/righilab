@@ -72,82 +72,126 @@ export async function extractTextFromFiles(files) {
 
 const MAX_CHARS_PER_VIDEO = 80000;
 
-/**
- * Estrae la trascrizione da uno o più video YouTube.
- * @param {string[]} urls - URL o ID dei video (es. https://youtube.com/watch?v=xxx)
- * @returns {Promise<string>} Trascrizioni concatenate con timestamp
- */
-/** Marker letto da generate-lesson per messaggi specifici (blocco IP cloud vs assenza sottotitoli). */
+/** Marker letto da generate-lesson per messaggi specifici. */
 export const TRANSCRIPT_ERROR = {
+  /** Compat: ora indica anche quota Gemini esaurita (prima era blocco IP YouTube). */
   IP_BLOCKED: "TRANSCRIPT_ERROR:IP_BLOCKED",
+  QUOTA_EXCEEDED: "TRANSCRIPT_ERROR:QUOTA_EXCEEDED",
   NO_CAPTIONS: "TRANSCRIPT_ERROR:NO_CAPTIONS",
   VIDEO_UNAVAILABLE: "TRANSCRIPT_ERROR:VIDEO_UNAVAILABLE",
 };
 
+const YOUTUBE_TRANSCRIPT_MODEL = "gemini-2.5-flash";
+
+function normalizeYoutubeUrl(input) {
+  const t = String(input || "").trim();
+  if (!t) return null;
+  if (/^[A-Za-z0-9_-]{11}$/.test(t)) {
+    return `https://www.youtube.com/watch?v=${t}`;
+  }
+  try {
+    const u = new URL(t);
+    const host = u.hostname.replace(/^www\./, "");
+    let id = null;
+    if (host === "youtu.be") {
+      id = u.pathname.replace(/^\//, "").split("/")[0] || null;
+    } else if (host.endsWith("youtube.com")) {
+      if (u.pathname === "/watch") {
+        id = u.searchParams.get("v");
+      } else if (u.pathname.startsWith("/shorts/") || u.pathname.startsWith("/embed/")) {
+        id = u.pathname.split("/")[2] || null;
+      }
+    }
+    if (id && /^[A-Za-z0-9_-]{11}$/.test(id)) {
+      return `https://www.youtube.com/watch?v=${id}`;
+    }
+  } catch (_) {}
+  return t;
+}
+
+/**
+ * Estrae una trascrizione cronologica da uno o più video YouTube usando Gemini.
+ * Sostituisce lo scraping client di youtube-transcript: in produzione (IP cloud)
+ * YouTube risponde HTTP 400 al timedtext, mentre Gemini consuma direttamente l'URL
+ * tramite fileData e non richiede IP residenziali.
+ *
+ * @param {string[]} urls - URL (o ID) dei video YouTube
+ * @returns {Promise<string>} Trascrizioni concatenate con timestamp [m:ss]
+ */
 export async function extractTranscriptFromVideos(urls) {
-  const {
-    fetchTranscript,
-    YoutubeTranscriptTooManyRequestError,
-    YoutubeTranscriptDisabledError,
-    YoutubeTranscriptNotAvailableError,
-    YoutubeTranscriptNotAvailableLanguageError,
-    YoutubeTranscriptVideoUnavailableError,
-  } = await import("youtube-transcript");
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    return (urls || [])
+      .map((u) => `--- ${u} ---\n[Configurazione AI mancante]`)
+      .join("\n\n");
+  }
+
+  const { GoogleGenAI } = await import("@google/genai");
+  const ai = new GoogleGenAI({ apiKey });
   const parts = [];
 
   for (const url of urls) {
-    const trimmed = (url || "").trim();
-    if (!trimmed) continue;
+    const fileUri = normalizeYoutubeUrl(url);
+    if (!fileUri) continue;
 
     try {
-      const segments = await fetchTranscript(trimmed);
-      if (!segments?.length) {
-        parts.push(`--- ${trimmed} ---\n[Trascrizioni non disponibili per questo video]`);
-        continue;
-      }
-
-      const lines = segments.map((s) => {
-        const ms = s.offset ?? 0;
-        const m = Math.floor(ms / 60000);
-        const sec = Math.floor((ms % 60000) / 1000);
-        const ts = `[${m}:${String(sec).padStart(2, "0")}]`;
-        return `${ts} ${(s.text || "").trim()}`;
+      const response = await ai.models.generateContent({
+        model: YOUTUBE_TRANSCRIPT_MODEL,
+        contents: [
+          {
+            role: "user",
+            parts: [
+              {
+                fileData: { fileUri },
+                videoMetadata: { fps: 0.2 },
+              },
+              {
+                text:
+                  "Trascrivi cronologicamente questo video YouTube in italiano basandoti soprattutto sull'audio.\n" +
+                  "Formato OBBLIGATORIO: una riga per segmento, nello stile esatto\n" +
+                  "[m:ss] testo del segmento\n" +
+                  "Dove m sono i minuti (anche oltre 60) e ss i secondi a due cifre.\n" +
+                  "Copri tutto il video in ordine temporale, senza saltare nulla, ma senza divagare.\n" +
+                  "Non aggiungere intestazioni, note o testo fuori dal formato sopra. Solo righe con timestamp.\n" +
+                  "Massimo 200 righe.",
+              },
+            ],
+          },
+        ],
+        config: {
+          maxOutputTokens: 6144,
+          temperature: 0.2,
+          mediaResolution: "MEDIA_RESOLUTION_LOW",
+        },
       });
 
-      let text = lines.join("\n").slice(0, MAX_CHARS_PER_VIDEO);
-      if (lines.join("\n").length > MAX_CHARS_PER_VIDEO) {
-        text += "\n[... trascrizione troncata]";
-      }
-      parts.push(`--- Video: ${trimmed} ---\n${text}`);
-    } catch (err) {
-      console.warn(`[extractContent] Errore trascrizione ${trimmed}:`, err?.message || err);
-      let marker = null;
-      if (err instanceof YoutubeTranscriptTooManyRequestError) {
-        marker = TRANSCRIPT_ERROR.IP_BLOCKED;
-      } else if (
-        err instanceof YoutubeTranscriptDisabledError ||
-        err instanceof YoutubeTranscriptNotAvailableError ||
-        err instanceof YoutubeTranscriptNotAvailableLanguageError
-      ) {
-        marker = TRANSCRIPT_ERROR.NO_CAPTIONS;
-      } else if (err instanceof YoutubeTranscriptVideoUnavailableError) {
-        marker = TRANSCRIPT_ERROR.VIDEO_UNAVAILABLE;
-      } else {
-        const m = String(err?.message || "");
-        if (/captcha|too many requests/i.test(m)) marker = TRANSCRIPT_ERROR.IP_BLOCKED;
-        else if (/disabled|No transcripts are available/i.test(m)) marker = TRANSCRIPT_ERROR.NO_CAPTIONS;
-        else if (/no longer available|Impossible to retrieve Youtube video ID/i.test(m)) {
-          marker = TRANSCRIPT_ERROR.VIDEO_UNAVAILABLE;
-        }
-      }
-      if (marker) {
-        parts.push(`--- ${trimmed} ---\n[${marker}]`);
+      const text = response?.text?.trim() || "";
+
+      if (!text) {
+        parts.push(`--- ${fileUri} ---\n[${TRANSCRIPT_ERROR.NO_CAPTIONS}]`);
         continue;
       }
-      const msg = err?.message?.includes("disabled") || err?.message?.includes("unavailable")
-        ? "Trascrizioni disabilitate o video non disponibile"
-        : "Impossibile recuperare la trascrizione";
-      parts.push(`--- ${trimmed} ---\n[${msg}]`);
+
+      const truncated =
+        text.length > MAX_CHARS_PER_VIDEO
+          ? text.slice(0, MAX_CHARS_PER_VIDEO) + "\n[... trascrizione troncata]"
+          : text;
+
+      parts.push(`--- Video: ${fileUri} ---\n${truncated}`);
+    } catch (err) {
+      const msg = String(err?.message || err || "");
+      console.warn(`[extractContent] Errore trascrizione Gemini ${fileUri}:`, msg);
+
+      let marker = null;
+      if (/quota|429|RESOURCE_EXHAUSTED|rate.?limit/i.test(msg)) {
+        marker = TRANSCRIPT_ERROR.QUOTA_EXCEEDED;
+      } else if (/not\s*found|404|unavailable|invalid.*url|video.*not/i.test(msg)) {
+        marker = TRANSCRIPT_ERROR.VIDEO_UNAVAILABLE;
+      } else {
+        marker = TRANSCRIPT_ERROR.NO_CAPTIONS;
+      }
+
+      parts.push(`--- ${fileUri} ---\n[${marker}]`);
     }
   }
 
