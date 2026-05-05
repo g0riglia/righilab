@@ -71,13 +71,16 @@ export async function POST(request) {
     }
 
     if (method === "video" && items.length > 0) {
-      if (rawContent.includes(TRANSCRIPT_ERROR.IP_BLOCKED)) {
+      if (
+        rawContent.includes(TRANSCRIPT_ERROR.QUOTA_EXCEEDED) ||
+        rawContent.includes(TRANSCRIPT_ERROR.IP_BLOCKED)
+      ) {
         return NextResponse.json(
           {
             error:
-              "YouTube spesso blocca le trascrizioni se la richiesta parte da un server in cloud (es. Vercel), mentre in locale passa dalla tua rete. Soluzioni: proxy residenziale, microservizio su VPS, o API di terze parti per i sottotitoli. I video possono avere i sottotitoli e comunque fallire solo in produzione.",
+              "Quota Gemini esaurita per ora. Sul piano gratuito ci sono limiti stringenti per minuto e per giorno (specie sui modelli con video). Aspetta qualche minuto e riprova, oppure attiva un piano a pagamento sulla console Google AI Studio.",
           },
-          { status: 503 }
+          { status: 429 }
         );
       }
       const hasValidTranscript = /\[\d+:\d{2}\]\s+.{2,}/.test(rawContent);
